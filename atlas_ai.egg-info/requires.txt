@@ -1,0 +1,6 @@
+pylance
+pyarrow
+pandas
+click
+Pillow
+psutil
