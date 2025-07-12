@@ -40,14 +40,14 @@ def create_dataset(data: str, options: Optional[Dict[str, Any]] = None) -> BaseD
     if task == "object_detection":
         if format == "coco":
             from atlas.tasks.object_detection.coco import CocoDataset
-            return CocoDataset(data)
+            return CocoDataset(data, options)
         elif format == "yolo":
             from atlas.tasks.object_detection.yolo import YoloDataset
-            return YoloDataset(data)
+            return YoloDataset(data, options)
     elif task == "segmentation":
         if format == "coco":
             from atlas.tasks.segmentation.coco import CocoSegmentationDataset
-            return CocoSegmentationDataset(data)
+            return CocoSegmentationDataset(data, options)
     elif data.endswith(".csv"):
         from atlas.tasks.tabular.csv import CsvDataset
         return CsvDataset(data)

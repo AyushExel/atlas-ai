@@ -24,10 +24,16 @@ import numpy as np
 from atlas.tasks.data_model.base import BaseDataset
 
 
+import os
+
 class CocoSegmentationDataset(BaseDataset):
     """
     A dataset that reads data from a COCO JSON file for segmentation tasks.
     """
+    def __init__(self, data: str, options: dict = None):
+        super().__init__(data)
+        self.options = options or {}
+        self.image_root = self.options.get("image_root")
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """
@@ -50,7 +56,8 @@ class CocoSegmentationDataset(BaseDataset):
             for ann in batch_annotations:
                 image_id = ann["image_id"]
                 image_info = images[image_id]
-                with open(image_info["file_name"], "rb") as f:
+                image_path = os.path.join(self.image_root, image_info["file_name"]) if self.image_root else image_info["file_name"]
+                with open(image_path, "rb") as f:
                     images_data.append(f.read())
 
                 bboxes.append(ann["bbox"])

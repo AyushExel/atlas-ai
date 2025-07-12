@@ -58,4 +58,5 @@ def sink(
     if "format" in lance_options:
         del lance_options["format"]
 
+    image_root = lance_options.pop("image_root", None)
     dataset.to_lance(uri, **lance_options)

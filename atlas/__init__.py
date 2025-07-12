@@ -17,3 +17,4 @@
 __all__ = ["sink"]
 
 from .data_sinks import sink
+from .visualizers.visualizer import visualize

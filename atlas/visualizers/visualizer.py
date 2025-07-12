@@ -53,11 +53,16 @@ def visualize(uri: str, num_samples: int = 5):
                 if "bbox" in row:
                     draw = ImageDraw.Draw(image)
                     bbox = row["bbox"]
+
+                    def convert_bbox(b):
+                        x, y, w, h = b
+                        return [x, y, x + w, y + h]
+
                     if isinstance(bbox[0], list): # multiple bboxes
                         for b in bbox:
-                            draw.rectangle(b, outline="red", width=2)
+                            draw.rectangle(convert_bbox(b), outline="red", width=2)
                     else:
-                        draw.rectangle(bbox, outline="red", width=2)
+                        draw.rectangle(convert_bbox(bbox), outline="red", width=2)
                 image.show()
             except Exception as e:
                 print(f"Could not display image: {e}")

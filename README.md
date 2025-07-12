@@ -67,11 +67,11 @@ pip install pandas pyarrow requests
 Then, you can run the example scripts from the root of the repository:
 
 ```bash
-python examples/sink_csv.py
-python examples/sink_parquet.py
-python examples/sink_coco_detection.py
-python examples/sink_coco_segmentation.py
-python examples/sink_yolo.py
+python examples/tabular_csv.py
+python examples/tabular_parquet.py
+python examples/object_detection_coco.py
+python examples/segmentation_coco.py
+python examples/object_detection_yolo.py
 ```
 
 ## Contributing

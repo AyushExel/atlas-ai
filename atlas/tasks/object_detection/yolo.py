@@ -26,6 +26,9 @@ class YoloDataset(BaseDataset):
     """
     A dataset that reads data from a YOLO detection file.
     """
+    def __init__(self, data: str, options: dict = None):
+        super().__init__(data)
+        self.options = options or {}
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """

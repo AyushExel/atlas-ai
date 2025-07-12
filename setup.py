@@ -14,5 +14,7 @@ setup(
         'pyarrow',
         'pandas',
         'click',
+        'Pillow',
+        'psutil',
     ],
 )
