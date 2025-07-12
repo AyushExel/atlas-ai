@@ -56,6 +56,24 @@ atlas sink yolo_data_dir my_dataset.lance --task object_detection --format yolo
 atlas visualize my_dataset.lance --num-samples 10
 ```
 
+## Examples
+
+The `examples` directory contains scripts that demonstrate how to use the `atlas-ai` library for various tasks. To run the examples, you will need to install the required dependencies:
+
+```bash
+pip install pandas pyarrow requests
+```
+
+Then, you can run the example scripts from the root of the repository:
+
+```bash
+python examples/sink_csv.py
+python examples/sink_parquet.py
+python examples/sink_coco_detection.py
+python examples/sink_coco_segmentation.py
+python examples/sink_yolo.py
+```
+
 ## Contributing
 
 Contributions are welcome! Please see the [contributing guide](CONTRIBUTING.md) for more information.
