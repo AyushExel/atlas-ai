@@ -103,11 +103,11 @@ class LanceBuilder:
                 
                 # If item doesn't exist, create it. Otherwise, just add annotations.
                 if item_id not in items:
-                    # Try to find the image in a few common locations
+                    # Try to find the image in a few common locations, then search recursively
                     possible_paths = [
                         self.input_path / "images" / item_id,
                         self.input_path / "PNGImages" / item_id,
-                        self.input_path / item_id
+                        self.input_path / item_id,
                     ]
                     image_path = None
                     for p in possible_paths:
@@ -115,6 +115,12 @@ class LanceBuilder:
                             image_path = p
                             break
                     
+                    # If not found in common paths, search recursively
+                    if not image_path:
+                        for found_path in self.input_path.rglob(item_id):
+                            image_path = found_path
+                            break
+
                     text_content = None
                     if isinstance(annotations[0], atlas.tasks.base.RawText):
                         text_content = annotations[0].text

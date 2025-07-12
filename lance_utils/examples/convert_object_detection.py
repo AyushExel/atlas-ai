@@ -205,19 +205,7 @@ def main():
     # Prepare data (convert masks to COCO bboxes)
     create_coco_annotations_from_masks(penn_fudan_path)
     
-    # The extractor expects an "images" subfolder
-    images_dir = penn_fudan_path / "images"
-    pngimages_dir = penn_fudan_path / "PNGImages"
-    if pngimages_dir.exists():
-        if images_dir.exists():
-            if reuse:
-                print(f"Images directory {images_dir} already exists. Reusing.")
-            else:
-                print(f"Removing existing images directory {images_dir}...")
-                shutil.rmtree(images_dir)
-                pngimages_dir.rename(images_dir)
-        else:
-            pngimages_dir.rename(images_dir)
+    # The builder will find the images automatically
 
     output_dir = Path("outputs")
     output_dir.mkdir(exist_ok=True)
@@ -235,6 +223,9 @@ def main():
     
     # --- Manual Visualization ---
     manual_visualize(output_path)
+
+    # --- Debug Print ---
+    debug_read_lance_dataset(output_path)
 
     # Clean up
     # shutil.rmtree(temp_dir)
