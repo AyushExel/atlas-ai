@@ -11,6 +11,7 @@ atlas/tasks/classification/extractors.py
 atlas/tasks/language/__init__.py
 atlas/tasks/language/extractors.py
 atlas/tasks/object_detection/__init__.py
+atlas/tasks/object_detection/base.py
 atlas/tasks/object_detection/extractors.py
 atlas/tasks/ranking/__init__.py
 atlas/tasks/vision_language/__init__.py

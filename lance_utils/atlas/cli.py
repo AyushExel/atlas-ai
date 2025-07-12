@@ -1,7 +1,9 @@
 # lance_utils/cli.py
 import click
-from .builder import LanceBuilder
+from .builder import LanceWriter
 from .visualizer import LanceVisualizer
+from .tasks.base import Task
+from .tasks.object_detection.base import ObjectDetectionTask
 
 @click.group()
 def cli():
@@ -11,17 +13,13 @@ def cli():
 @cli.command()
 @click.option("-i", "--input-path", required=True, help="Path to the source data directory.")
 @click.option("-o", "--output-path", required=True, help="Path to save the Lance dataset.")
-@click.option("-b", "--batch-size", default=0, type=int, help="Batch size for conversion. Auto-inferred if not set.")
-@click.option("--max-rows-per-file", default=1024, type=int, help="Max rows per file in the Lance dataset.")
-def build(input_path: str, output_path: str, batch_size: int, max_rows_per_file: int):
+@click.option("-b", "--batch-size", default=128, type=int, help="Batch size for conversion.")
+def build(input_path: str, output_path: str, batch_size: int):
     """Builds a Lance dataset from a source directory by auto-detecting all supported annotations."""
-    builder = LanceBuilder(
-        input_path=input_path,
-        output_path=output_path,
-        batch_size=batch_size,
-        max_rows_per_file=max_rows_per_file
-    )
-    builder.convert()
+    # For now, we'll just assume the task is object detection
+    task = ObjectDetectionTask(input_path)
+    writer = LanceWriter(output_path, task, batch_size)
+    writer.write()
 
 @cli.command()
 @click.option("-i", "--input-path", required=True, help="Path to the Lance dataset.")

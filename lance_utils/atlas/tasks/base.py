@@ -1,9 +1,38 @@
 # lance_utils/tasks/base.py
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Generator
 from pathlib import Path
 import abc
 import pyarrow as pa
+from abc import ABC, abstractmethod
+
+class Task(ABC):
+    """
+    Abstract base class for a task.
+    A task defines the schema for the data and provides a way to iterate over the data.
+    """
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """The name of the task."""
+        pass
+
+    @property
+    @abstractmethod
+    def version(self) -> str:
+        """The version of the task."""
+        pass
+
+    @abstractmethod
+    def get_schema(self) -> pa.Schema:
+        """The schema for the task."""
+        pass
+
+    @abstractmethod
+    def yield_data(self) -> Generator[Dict[str, Any], None, None]:
+        """Yields data for the task."""
+        pass
 
 class Annotation(BaseModel):
     """Base model for a single annotation."""

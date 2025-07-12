@@ -7,10 +7,15 @@ import urllib.request
 import zipfile
 import shutil
 from PIL import Image
-import atlas.visualizer
 import numpy as np
-import atlas
 import argparse
+from atlas.builder import LanceWriter
+from atlas.tasks.object_detection.base import ObjectDetection
+import lance
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import math
+import io
 
 def download_and_extract(url: str, download_path: Path, extract_path: Path, reuse: bool = False):
     """Downloads and extracts a zip file."""
@@ -96,8 +101,6 @@ def create_coco_annotations_from_masks(data_path: Path):
     with open(annotations_file, "w") as f:
         json.dump(coco_data, f, indent=2)
 
-import lance
-
 def debug_read_lance_dataset(path: Path):
     print(f"--- DEBUG: Reading Lance dataset from {path} ---")
     if not path.exists():
@@ -114,11 +117,6 @@ def debug_read_lance_dataset(path: Path):
     except Exception as e:
         print(f"DEBUG: Error reading table: {e}")
     print("--- END DEBUG ---")
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import math
-import io
 
 def manual_visualize(dataset_path: Path, num_images: int = 4):
     """Manually visualizes a few images and their bounding boxes from the dataset."""
@@ -205,18 +203,15 @@ def main():
     # Prepare data (convert masks to COCO bboxes)
     create_coco_annotations_from_masks(penn_fudan_path)
     
-    # The builder will find the images automatically
-
     output_dir = Path("outputs")
     output_dir.mkdir(exist_ok=True)
     output_path = output_dir / "penn_fudan_detection.lance"
 
     # Use lance_utils to build the dataset
     print("\nBuilding Lance dataset...")
-    atlas.build(
-        input_path=str(penn_fudan_path),
-        output_path=str(output_path)
-    )
+    task = ObjectDetection(input_path=str(penn_fudan_path))
+    writer = LanceWriter(output_path=str(output_path), task=task)
+    writer.write()
     
     print(f"\nConversion complete!")
     print(f"Dataset saved to {output_path}")
