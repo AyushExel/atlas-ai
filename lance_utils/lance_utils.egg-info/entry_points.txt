@@ -1,2 +1,0 @@
-[console_scripts]
-lance_utils = lance_utils.cli:cli

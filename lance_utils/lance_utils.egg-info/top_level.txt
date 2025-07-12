@@ -1,8 +1,0 @@
-build
-dummy_data
-examples
-lance_utils
-scripts
-temp_data
-temp_extract
-tests

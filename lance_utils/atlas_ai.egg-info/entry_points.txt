@@ -1,2 +1,0 @@
-[console_scripts]
-atlas = atlas.cli:cli
