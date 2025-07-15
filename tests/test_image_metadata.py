@@ -21,7 +21,8 @@ class TestImageMetadata(unittest.TestCase):
                 ],
                 "annotations": [
                     {"id": 1, "image_id": 1, "category_id": 1, "bbox": [10, 10, 50, 50]},
-                    {"id": 2, "image_id": 2, "category_id": 2, "bbox": [20, 20, 60, 60]},
+                    {"id": 2, "image_id": 1, "category_id": 2, "bbox": [20, 20, 60, 60]},
+                    {"id": 3, "image_id": 2, "category_id": 1, "bbox": [30, 30, 70, 70]},
                 ],
                 "categories": [
                     {"id": 1, "name": "cat"},
@@ -45,7 +46,12 @@ class TestImageMetadata(unittest.TestCase):
                 self.assertIn("file_name", batch.schema.names)
                 self.assertEqual(batch["height"].to_pylist(), [480, 480])
                 self.assertEqual(batch["width"].to_pylist(), [640, 640])
-                self.assertEqual(batch["file_name"].to_pylist(), ["image1.jpg", "image2.jpg"])
+                self.assertEqual(
+                    batch["file_name"].to_pylist(), ["image1.jpg", "image2.jpg"]
+                )
+                self.assertEqual(len(batch["bbox"]), 2)
+                self.assertEqual(len(batch["bbox"][0]), 2)
+                self.assertEqual(len(batch["bbox"][1]), 1)
 
     def test_yolo_metadata(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -83,10 +89,17 @@ class TestImageMetadata(unittest.TestCase):
                     },
                     {
                         "id": 2,
-                        "image_id": 2,
+                        "image_id": 1,
                         "category_id": 2,
                         "bbox": [20, 20, 60, 60],
                         "segmentation": [[20, 20, 80, 20, 80, 80, 20, 80]],
+                    },
+                    {
+                        "id": 3,
+                        "image_id": 2,
+                        "category_id": 1,
+                        "bbox": [30, 30, 70, 70],
+                        "segmentation": [[30, 30, 90, 30, 90, 90, 30, 90]],
                     },
                 ],
                 "categories": [
@@ -111,7 +124,15 @@ class TestImageMetadata(unittest.TestCase):
                 self.assertIn("file_name", batch.schema.names)
                 self.assertEqual(batch["height"].to_pylist(), [480, 480])
                 self.assertEqual(batch["width"].to_pylist(), [640, 640])
-                self.assertEqual(batch["file_name"].to_pylist(), ["image1.jpg", "image2.jpg"])
+                self.assertEqual(
+                    batch["file_name"].to_pylist(), ["image1.jpg", "image2.jpg"]
+                )
+                self.assertEqual(len(batch["bbox"]), 2)
+                self.assertEqual(len(batch["bbox"][0]), 2)
+                self.assertEqual(len(batch["bbox"][1]), 1)
+                self.assertEqual(len(batch["mask"]), 2)
+                self.assertEqual(len(batch["mask"][0]), 2)
+                self.assertEqual(len(batch["mask"][1]), 1)
 
 
 if __name__ == "__main__":
