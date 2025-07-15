@@ -30,7 +30,9 @@ class VisualizerTest(unittest.TestCase):
             "bbox": [[10, 20, 30, 40], [50, 60, 70, 80], [90, 100, 110, 120]],
             "label": [1, 2, 1],
         })
-        lance.write_dataset(df, self.lance_path)
+        import pyarrow as pa
+        table = pa.Table.from_pandas(df)
+        lance.write_dataset(table, self.lance_path, mode="create")
 
     def tearDown(self):
         if os.path.exists(self.lance_path):
@@ -40,10 +42,16 @@ class VisualizerTest(unittest.TestCase):
             import shutil
             shutil.rmtree(self.image_dir)
 
-    @patch('PIL.Image.Image.show')
+    @patch('matplotlib.pyplot.show')
     def test_visualize(self, mock_show):
         visualize(self.lance_path, num_samples=2)
-        self.assertEqual(mock_show.call_count, 2)
+        self.assertEqual(mock_show.call_count, 1)
+
+    @patch('matplotlib.pyplot.savefig')
+    def test_visualize_saves_file(self, mock_savefig):
+        output_file = "test_visualizer.png"
+        visualize(self.lance_path, num_samples=2, output_file=output_file)
+        mock_savefig.assert_called_once_with(output_file)
 
 
 if __name__ == "__main__":
