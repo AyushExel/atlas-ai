@@ -43,46 +43,79 @@ class CocoSegmentationDataset(BaseDataset):
             coco_data = json.load(f)
 
         images = {image["id"]: image for image in coco_data["images"]}
-        annotations = coco_data["annotations"]
+        annotations_by_image = {}
+        for ann in coco_data["annotations"]:
+            annotations_by_image.setdefault(ann["image_id"], []).append(ann)
 
-        for i in range(0, len(annotations), batch_size):
-            batch_annotations = annotations[i : i + batch_size]
+        image_ids = list(images.keys())
+
+        for i in range(0, len(image_ids), batch_size):
+            batch_image_ids = image_ids[i : i + batch_size]
 
             images_data = []
-            bboxes = []
-            masks = []
-            labels = []
+            all_bboxes = []
+            all_masks = []
+            all_labels = []
+            heights = []
+            widths = []
+            file_names = []
 
-            for ann in batch_annotations:
-                image_id = ann["image_id"]
+            for image_id in batch_image_ids:
                 image_info = images[image_id]
-                image_path = os.path.join(self.image_root, image_info["file_name"]) if self.image_root else image_info["file_name"]
+                image_path = (
+                    os.path.join(self.image_root, image_info["file_name"])
+                    if self.image_root
+                    else image_info["file_name"]
+                )
                 with open(image_path, "rb") as f:
                     images_data.append(f.read())
 
-                bboxes.append(ann["bbox"])
+                annotations = annotations_by_image.get(image_id, [])
+                bboxes = [ann["bbox"] for ann in annotations]
+                labels = [ann["category_id"] for ann in annotations]
+                masks = []
+                for ann in annotations:
+                    mask = np.zeros(
+                        (image_info["height"], image_info["width"]), dtype=np.uint8
+                    )
+                    for seg in ann["segmentation"]:
+                        poly = np.array(seg).reshape((len(seg) // 2, 2))
+                        from PIL import ImageDraw
 
-                # Create a mask from the segmentation data
-                mask = np.zeros((image_info['height'], image_info['width']), dtype=np.uint8)
-                for seg in ann['segmentation']:
-                    poly = np.array(seg).reshape((len(seg)//2, 2))
-                    # This is a simplified mask creation, for polygons only.
-                    # For a more robust solution, consider using a library like pycocotools.
-                    from PIL import ImageDraw
-                    img = Image.new('L', (image_info['width'], image_info['height']), 0)
-                    ImageDraw.Draw(img).polygon(tuple(map(tuple, poly)), outline=1, fill=1)
-                    mask = np.maximum(mask, np.array(img))
+                        img = Image.new(
+                            "L", (image_info["width"], image_info["height"]), 0
+                        )
+                        ImageDraw.Draw(img).polygon(
+                            tuple(map(tuple, poly)), outline=1, fill=1
+                        )
+                        mask = np.maximum(mask, np.array(img))
+                    masks.append(mask.tobytes())
 
-                masks.append(mask.tobytes())
-                labels.append(ann["category_id"])
+                all_bboxes.append(bboxes)
+                all_masks.append(masks)
+                all_labels.append(labels)
+                heights.append(image_info["height"])
+                widths.append(image_info["width"])
+                file_names.append(image_info["file_name"])
 
             batch = pa.RecordBatch.from_arrays(
                 [
                     pa.array(images_data, type=pa.binary()),
-                    pa.array(bboxes, type=pa.list_(pa.float32())),
-                    pa.array(masks, type=pa.binary()),
-                    pa.array(labels, type=pa.int64()),
+                    pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
+                    pa.array(all_masks, type=pa.list_(pa.binary())),
+                    pa.array(all_labels, type=pa.list_(pa.int64())),
+                    pa.array(heights, type=pa.int64()),
+                    pa.array(widths, type=pa.int64()),
+                    pa.array(file_names, type=pa.string()),
                 ],
-                names=["image", "bbox", "mask", "label"],
+                names=[
+                    "image",
+                    "bbox",
+                    "mask",
+                    "label",
+                    "height",
+                    "width",
+                    "file_name",
+                ],
             )
             yield batch
