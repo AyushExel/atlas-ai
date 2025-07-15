@@ -61,12 +61,11 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows))
     axes = axes.flatten()
 
-    for i, ax in enumerate(axes):
-        if i >= len(sample_indices):
-            ax.axis("off")
-            continue
 
+    for i in range(len(sample_indices)):
+        ax = axes[i]
         row = {key: value[i] for key, value in samples.items() if key != "class_names"}
+
         if "image" in row:
             try:
                 image = Image.open(io.BytesIO(row["image"]))
@@ -110,6 +109,10 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
         else:
             ax.text(0.5, 0.5, str(row), ha="center", va="center")
             ax.axis("off")
+
+    # Turn off any unused axes
+    for j in range(len(sample_indices), len(axes)):
+        axes[j].axis("off")
 
     plt.tight_layout()
     if output_file:
