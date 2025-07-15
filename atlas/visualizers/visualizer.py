@@ -98,7 +98,7 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                                     fontsize=8,
                                     color="white",
                                 )
-                elif "mask" in row and "label" in row:
+                if "mask" in row and "label" in row:
                     masks = row["mask"]
                     labels = row["label"]
                     for mask_bytes, label in zip(masks, labels):
