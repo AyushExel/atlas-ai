@@ -73,11 +73,6 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                 ax.imshow(image)
                 ax.axis("off")
 
-                if "mask" in row and "label" in row:
-                    masks = row["mask"]
-                    for mask_bytes in masks:
-                        mask_image = Image.open(io.BytesIO(mask_bytes)).convert("RGBA")
-                        ax.imshow(mask_image, alpha=0.7)
                 if "bbox" in row and "label" in row:
                     bboxes = row["bbox"]
                     labels = row["label"]
@@ -103,6 +98,12 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                                     fontsize=8,
                                     color="white",
                                 )
+
+                if "mask" in row:
+                    masks = row["mask"]
+                    for mask_bytes in masks:
+                        mask_image = Image.open(io.BytesIO(mask_bytes)).convert("RGBA")
+                        ax.imshow(mask_image, alpha=0.7)
 
             except Exception as e:
                 print(f"Could not display image: {e}")
