@@ -80,17 +80,26 @@ class CocoSegmentationDataset(BaseDataset):
                     mask = np.zeros(
                         (image_info["height"], image_info["width"]), dtype=np.uint8
                     )
-                    for seg in ann["segmentation"]:
-                        poly = np.array(seg).reshape((len(seg) // 2, 2))
-                        from PIL import ImageDraw
+                    if isinstance(ann["segmentation"], list):
+                        for seg in ann["segmentation"]:
+                            poly = np.array(seg).reshape((len(seg) // 2, 2))
+                            from PIL import ImageDraw
 
-                        img = Image.new(
-                            "L", (image_info["width"], image_info["height"]), 0
+                            img = Image.new(
+                                "L", (image_info["width"], image_info["height"]), 0
+                            )
+                            ImageDraw.Draw(img).polygon(
+                                tuple(map(tuple, poly)), outline=1, fill=1
+                            )
+                            mask = np.maximum(mask, np.array(img))
+                    else:
+                        from pycocotools import mask as mask_utils
+                        rle = mask_utils.frPyObjects(
+                            ann["segmentation"],
+                            image_info["height"],
+                            image_info["width"],
                         )
-                        ImageDraw.Draw(img).polygon(
-                            tuple(map(tuple, poly)), outline=1, fill=1
-                        )
-                        mask = np.maximum(mask, np.array(img))
+                        mask = np.maximum(mask, mask_utils.decode(rle))
                     masks.append(mask.tobytes())
 
                 all_bboxes.append(bboxes)
