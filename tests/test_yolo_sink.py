@@ -15,9 +15,10 @@ class YoloSinkTest(unittest.TestCase):
         os.makedirs(self.yolo_dir, exist_ok=True)
 
         # Create dummy image and label files
+        from PIL import Image
         for i in range(3):
-            with open(os.path.join(self.yolo_dir, f"image{i}.jpg"), "w") as f:
-                f.write("dummy image data")
+            img = Image.new('RGB', (100, 100), color = 'red')
+            img.save(os.path.join(self.yolo_dir, f"image{i}.jpg"))
             with open(os.path.join(self.yolo_dir, f"image{i}.txt"), "w") as f:
                 f.write(f"{i} 0.5 0.5 0.2 0.2\n")
 
@@ -34,7 +35,7 @@ class YoloSinkTest(unittest.TestCase):
         dataset = lance.dataset(self.lance_path)
         self.assertEqual(dataset.count_rows(), 3)
         table = dataset.to_table()
-        self.assertEqual(table.column_names, ["image", "bbox", "label"])
+        self.assertEqual(table.column_names, ["image", "bbox", "label", "height", "width", "file_name"])
 
         images_data = []
         for i in range(3):

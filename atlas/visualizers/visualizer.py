@@ -14,14 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 import io
 import math
+import random
 
 import lance
-from PIL import Image
-import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+from PIL import Image
+
+from atlas.tasks.data_model.base import BaseDataset
 
 
 def visualize(uri: str, num_samples: int = 5, output_file: str = None):
@@ -45,6 +47,9 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
         print("Dataset is empty.")
         return
 
+    metadata = BaseDataset.get_metadata(uri)
+    class_names = metadata.class_names if metadata else []
+
     sample_indices = random.sample(range(total_rows), min(num_samples, total_rows))
     samples = dataset.take(sample_indices).to_pydict()
 
@@ -65,9 +70,10 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                 ax.imshow(image)
                 ax.axis("off")
 
-                if "bbox" in row:
+                if "bbox" in row and "label" in row:
                     bboxes = row["bbox"]
-                    for bbox in bboxes:
+                    labels = row["label"]
+                    for bbox, label in zip(bboxes, labels):
                         rect = patches.Rectangle(
                             (bbox[0], bbox[1]),
                             bbox[2],
@@ -77,6 +83,15 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                             facecolor="none",
                         )
                         ax.add_patch(rect)
+                        if class_names:
+                            ax.text(
+                                bbox[0],
+                                bbox[1] - 2,
+                                class_names[label],
+                                bbox=dict(facecolor="red", alpha=0.5),
+                                fontsize=8,
+                                color="white",
+                            )
 
                 if "mask" in row:
                     masks = row["mask"]
