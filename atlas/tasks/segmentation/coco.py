@@ -52,29 +52,42 @@ class CocoSegmentationDataset(BaseDataset):
             bboxes = []
             masks = []
             labels = []
+            heights = []
+            widths = []
+            file_names = []
 
             for ann in batch_annotations:
                 image_id = ann["image_id"]
                 image_info = images[image_id]
-                image_path = os.path.join(self.image_root, image_info["file_name"]) if self.image_root else image_info["file_name"]
+                image_path = (
+                    os.path.join(self.image_root, image_info["file_name"])
+                    if self.image_root
+                    else image_info["file_name"]
+                )
                 with open(image_path, "rb") as f:
                     images_data.append(f.read())
 
                 bboxes.append(ann["bbox"])
 
                 # Create a mask from the segmentation data
-                mask = np.zeros((image_info['height'], image_info['width']), dtype=np.uint8)
-                for seg in ann['segmentation']:
-                    poly = np.array(seg).reshape((len(seg)//2, 2))
+                mask = np.zeros(
+                    (image_info["height"], image_info["width"]), dtype=np.uint8
+                )
+                for seg in ann["segmentation"]:
+                    poly = np.array(seg).reshape((len(seg) // 2, 2))
                     # This is a simplified mask creation, for polygons only.
                     # For a more robust solution, consider using a library like pycocotools.
                     from PIL import ImageDraw
-                    img = Image.new('L', (image_info['width'], image_info['height']), 0)
+
+                    img = Image.new("L", (image_info["width"], image_info["height"]), 0)
                     ImageDraw.Draw(img).polygon(tuple(map(tuple, poly)), outline=1, fill=1)
                     mask = np.maximum(mask, np.array(img))
 
                 masks.append(mask.tobytes())
                 labels.append(ann["category_id"])
+                heights.append(image_info["height"])
+                widths.append(image_info["width"])
+                file_names.append(image_info["file_name"])
 
             batch = pa.RecordBatch.from_arrays(
                 [
@@ -82,7 +95,18 @@ class CocoSegmentationDataset(BaseDataset):
                     pa.array(bboxes, type=pa.list_(pa.float32())),
                     pa.array(masks, type=pa.binary()),
                     pa.array(labels, type=pa.int64()),
+                    pa.array(heights, type=pa.int64()),
+                    pa.array(widths, type=pa.int64()),
+                    pa.array(file_names, type=pa.string()),
                 ],
-                names=["image", "bbox", "mask", "label"],
+                names=[
+                    "image",
+                    "bbox",
+                    "mask",
+                    "label",
+                    "height",
+                    "width",
+                    "file_name",
+                ],
             )
             yield batch

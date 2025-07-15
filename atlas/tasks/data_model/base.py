@@ -79,7 +79,11 @@ class BaseDataset(ABC):
             for batch in batches:
                 yield batch
 
-        lance.write_dataset(new_reader(), uri, schema=first_batch.schema, mode=mode, **kwargs)
+        schema = first_batch.schema
+        for field in ["height", "width", "file_name"]:
+            if field in schema.names:
+                schema = schema.remove(schema.get_field_index(field))
+        lance.write_dataset(new_reader(), uri, schema=schema, mode=mode, **kwargs)
 
     @abstractmethod
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:

@@ -16,6 +16,7 @@
 
 import os
 from typing import Generator
+from PIL import Image
 
 import pyarrow as pa
 
@@ -26,11 +27,14 @@ class YoloDataset(BaseDataset):
     """
     A dataset that reads data from a YOLO detection file.
     """
+
     def __init__(self, data: str, options: dict = None):
         super().__init__(data)
         self.options = options or {}
 
-    def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
+    def to_batches(
+        self, batch_size: int = 1024
+    ) -> Generator[pa.RecordBatch, None, None]:
         """
         Yields batches of the dataset as Arrow RecordBatches.
         """
@@ -48,10 +52,19 @@ class YoloDataset(BaseDataset):
             images_data = []
             bboxes = []
             labels = []
+            heights = []
+            widths = []
+            file_names = []
 
             for image_path in batch_image_files:
                 with open(image_path, "rb") as f:
-                    images_data.append(f.read())
+                    img_bytes = f.read()
+                    images_data.append(img_bytes)
+                    img = Image.open(image_path)
+                    width, height = img.size
+                    widths.append(width)
+                    heights.append(height)
+                    file_names.append(os.path.basename(image_path))
 
                 label_path = os.path.splitext(image_path)[0] + ".txt"
                 if label_path in label_files:
@@ -61,7 +74,12 @@ class YoloDataset(BaseDataset):
                             class_id = int(parts[0])
                             x_center, y_center, width, height = map(float, parts[1:])
 
-                            bboxes.append([round(x, 6) for x in [x_center, y_center, width, height]])
+                            bboxes.append(
+                                [
+                                    round(x, 6)
+                                    for x in [x_center, y_center, width, height]
+                                ]
+                            )
                             labels.append(class_id)
 
             batch = pa.RecordBatch.from_arrays(
@@ -69,7 +87,10 @@ class YoloDataset(BaseDataset):
                     pa.array(images_data, type=pa.binary()),
                     pa.array(bboxes, type=pa.list_(pa.float32())),
                     pa.array(labels, type=pa.int64()),
+                    pa.array(heights, type=pa.int64()),
+                    pa.array(widths, type=pa.int64()),
+                    pa.array(file_names, type=pa.string()),
                 ],
-                names=["image", "bbox", "label"],
+                names=["image", "bbox", "label", "height", "width", "file_name"],
             )
             yield batch
