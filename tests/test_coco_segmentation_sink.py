@@ -64,7 +64,7 @@ class CocoSegmentationSinkTest(unittest.TestCase):
         self.assertEqual(table.column("image").to_pylist()[0], image_data)
 
         self.assertEqual(table.column("bbox").to_pylist()[0], [[10.0, 20.0, 30.0, 40.0]])
-        self.assertEqual(table.column("label").to_pylist()[0], ["cat"])
+        self.assertEqual(table.column("label").to_pylist()[0], [1])
 
         mask_bytes = table.column("mask").to_pylist()[0][0]
         mask = np.frombuffer(mask_bytes, dtype=np.uint8).reshape(100, 100)

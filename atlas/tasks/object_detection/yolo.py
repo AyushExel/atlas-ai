@@ -19,7 +19,6 @@ from typing import Generator
 from PIL import Image
 
 import pyarrow as pa
-import yaml
 
 from atlas.tasks.data_model.base import BaseDataset
 
@@ -32,18 +31,6 @@ class YoloDataset(BaseDataset):
     def __init__(self, data: str, options: dict = None):
         super().__init__(data)
         self.options = options or {}
-        self._load_yolo_metadata()
-
-    def _load_yolo_metadata(self):
-        """
-        Loads the class names from the data.yaml file.
-        """
-        data_yaml_path = os.path.join(self.data, "data.yaml")
-        if os.path.exists(data_yaml_path):
-            with open(data_yaml_path, "r") as f:
-                data_yaml = yaml.safe_load(f)
-                if "names" in data_yaml:
-                    self.metadata.class_names = data_yaml["names"]
 
     def to_batches(
         self, batch_size: int = 1024

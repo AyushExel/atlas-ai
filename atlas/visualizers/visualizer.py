@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
 import io
 import math
-import random
 
 import lance
-import matplotlib.patches as patches
-import matplotlib.pyplot as plt
 from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 from atlas.tasks.data_model.base import BaseDataset
 
@@ -47,11 +47,11 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
         print("Dataset is empty.")
         return
 
-    metadata = BaseDataset.get_metadata(uri)
-    class_names = metadata.class_names if metadata else []
-
     sample_indices = random.sample(range(total_rows), min(num_samples, total_rows))
     samples = dataset.take(sample_indices).to_pydict()
+    metadata = BaseDataset.get_metadata(uri)
+    if metadata:
+        samples["class_names"] = metadata.class_names
 
     if num_samples > total_rows:
         num_samples = total_rows
@@ -66,7 +66,7 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
             ax.axis("off")
             continue
 
-        row = {key: value[i] for key, value in samples.items()}
+        row = {key: value[i] for key, value in samples.items() if key != "class_names"}
         if "image" in row:
             try:
                 image = Image.open(io.BytesIO(row["image"]))
@@ -86,15 +86,17 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                             facecolor="none",
                         )
                         ax.add_patch(rect)
-                        if class_names:
-                            ax.text(
-                                bbox[0],
-                                bbox[1] - 2,
-                                label,
-                                bbox=dict(facecolor="red", alpha=0.5),
-                                fontsize=8,
-                                color="white",
-                            )
+                        if "class_names" in samples:
+                            class_names = samples["class_names"]
+                            if class_names:
+                                ax.text(
+                                    bbox[0],
+                                    bbox[1] - 2,
+                                    class_names[label],
+                                    bbox=dict(facecolor="red", alpha=0.5),
+                                    fontsize=8,
+                                    color="white",
+                                )
 
                 if "mask" in row:
                     masks = row["mask"]
