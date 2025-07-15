@@ -48,8 +48,11 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
     sample_indices = random.sample(range(total_rows), min(num_samples, total_rows))
     samples = dataset.take(sample_indices).to_pydict()
 
+    if num_samples > total_rows:
+        num_samples = total_rows
+
     num_cols = 3
-    num_rows = math.ceil(len(sample_indices) / num_cols)
+    num_rows = math.ceil(num_samples / num_cols)
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows))
     axes = axes.flatten()
 
