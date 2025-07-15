@@ -26,6 +26,7 @@ from atlas.tasks.data_model.factory import create_dataset
 def sink(
     data: Union[str, BaseDataset],
     uri: str,
+    mode: str = "overwrite",
     options: Optional[Dict[str, Any]] = None,
 ):
     """
@@ -59,4 +60,4 @@ def sink(
         del lance_options["format"]
 
     image_root = lance_options.pop("image_root", None)
-    dataset.to_lance(uri, **lance_options)
+    dataset.to_lance(uri, mode=mode,  **lance_options)

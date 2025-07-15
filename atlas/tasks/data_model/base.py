@@ -80,9 +80,9 @@ class BaseDataset(ABC):
                 yield batch
 
         schema = first_batch.schema
-        for field in ["height", "width", "file_name"]:
-            if field in schema.names:
-                schema = schema.remove(schema.get_field_index(field))
+        #for field in ["height", "width", "file_name"]:
+        #    if field in schema.names:
+        #        schema = schema.remove(schema.get_field_index(field))
         lance.write_dataset(new_reader(), uri, schema=schema, mode=mode, **kwargs)
 
     @abstractmethod
