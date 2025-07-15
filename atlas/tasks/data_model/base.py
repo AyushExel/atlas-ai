@@ -14,11 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generator, Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, Generator, List, Optional
 
 import lance
 import pyarrow as pa
+
+
+@dataclass
+class TaskMetadata:
+    """
+    A dataclass to store metadata about a task.
+    """
+
+    class_names: List[str] = field(default_factory=list)
+    misc: Dict[str, Any] = field(default_factory=dict)
 
 
 class BaseDataset(ABC):
@@ -33,6 +45,7 @@ class BaseDataset(ABC):
 
     def __init__(self, data: str):
         self.data = data
+        self.metadata = TaskMetadata()
 
     def to_lance(
         self,
@@ -58,7 +71,7 @@ class BaseDataset(ABC):
         """
         from atlas.utils.system import get_dynamic_batch_size
 
-        reader = self.to_batches(batch_size=1) # read one row to estimate size
+        reader = self.to_batches(batch_size=1)  # read one row to estimate size
 
         batches = iter(reader)
         try:
@@ -80,10 +93,26 @@ class BaseDataset(ABC):
                 yield batch
 
         schema = first_batch.schema
-        #for field in ["height", "width", "file_name"]:
-        #    if field in schema.names:
-        #        schema = schema.remove(schema.get_field_index(field))
+        if self.metadata:
+            schema = schema.with_metadata({"metadata": json.dumps(self.metadata.__dict__)})
         lance.write_dataset(new_reader(), uri, schema=schema, mode=mode, **kwargs)
+
+    @staticmethod
+    def get_metadata(uri: str) -> TaskMetadata:
+        """
+        Retrieves the metadata from a Lance dataset.
+
+        Args:
+            uri (str): The URI of the Lance dataset.
+
+        Returns:
+            TaskMetadata: The metadata of the task.
+        """
+        dataset = lance.dataset(uri)
+        if b"metadata" in dataset.schema.metadata:
+            metadata_dict = json.loads(dataset.schema.metadata[b"metadata"])
+            return TaskMetadata(**metadata_dict)
+        return TaskMetadata()
 
     @abstractmethod
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
