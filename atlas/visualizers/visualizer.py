@@ -98,12 +98,26 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                                     fontsize=8,
                                     color="white",
                                 )
-
-                if "mask" in row:
+                elif "mask" in row and "label" in row:
                     masks = row["mask"]
-                    for mask_bytes in masks:
+                    labels = row["label"]
+                    for mask_bytes, label in zip(masks, labels):
                         mask_image = Image.open(io.BytesIO(mask_bytes)).convert("RGBA")
                         ax.imshow(mask_image, alpha=0.5)
+                        if "class_names" in samples:
+                            class_names = samples["class_names"]
+                            if class_names:
+                                class_name = class_names.get(str(label), str(label))
+                                # Find a suitable position to display the label for the mask
+                                # For now, let's just put it at the top-left corner of the image
+                                ax.text(
+                                    10,
+                                    10,
+                                    class_name,
+                                    bbox=dict(facecolor="red", alpha=0.5),
+                                    fontsize=8,
+                                    color="white",
+                                )
 
             except Exception as e:
                 print(f"Could not display image: {e}")
