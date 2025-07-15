@@ -15,21 +15,21 @@
 # limitations under the License.
 
 import json
-import os
 from typing import Generator
 
-import numpy as np
 import pyarrow as pa
 from PIL import Image
+import numpy as np
 
 from atlas.tasks.data_model.base import BaseDataset
 
+
+import os
 
 class CocoSegmentationDataset(BaseDataset):
     """
     A dataset that reads data from a COCO JSON file for segmentation tasks.
     """
-
     def __init__(self, data: str, options: dict = None):
         super().__init__(data)
         self.options = options or {}
@@ -47,7 +47,7 @@ class CocoSegmentationDataset(BaseDataset):
         for ann in coco_data["annotations"]:
             annotations_by_image.setdefault(ann["image_id"], []).append(ann)
         if "categories" in coco_data:
-            self.metadata.class_names = [cat["name"] for cat in coco_data["categories"]]
+            self.metadata.class_names = {cat["id"]: cat["name"] for cat in coco_data["categories"]}
 
         image_ids = list(images.keys())
 

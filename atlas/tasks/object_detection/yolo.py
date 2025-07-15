@@ -17,9 +17,9 @@
 import os
 from typing import Generator
 from PIL import Image
+import yaml
 
 import pyarrow as pa
-import yaml
 
 from atlas.tasks.data_model.base import BaseDataset
 
@@ -43,7 +43,9 @@ class YoloDataset(BaseDataset):
             with open(data_yaml_path, "r") as f:
                 data_yaml = yaml.safe_load(f)
                 if "names" in data_yaml:
-                    self.metadata.class_names = data_yaml["names"]
+                    self.metadata.class_names = {
+                        i: name for i, name in enumerate(data_yaml["names"])
+                    }
 
     def to_batches(
         self, batch_size: int = 1024

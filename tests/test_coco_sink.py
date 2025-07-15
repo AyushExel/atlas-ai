@@ -64,7 +64,7 @@ class CocoSinkTest(unittest.TestCase):
         self.assertEqual(table.column("image").to_pylist(), images_data)
         self.assertEqual(
             table.column("bbox").to_pylist(),
-            [[[10, 20, 30, 40]], [[50, 60, 70, 80]], [[90, 100, 110, 120]]],
+            [[[10.0, 20.0, 30.0, 40.0]], [[50.0, 60.0, 70.0, 80.0]], [[90.0, 100.0, 110.0, 120.0]]],
         )
         self.assertEqual(table.column("label").to_pylist(), [[1], [2], [1]])
 
