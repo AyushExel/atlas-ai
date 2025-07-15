@@ -46,6 +46,8 @@ class CocoSegmentationDataset(BaseDataset):
         annotations_by_image = {}
         for ann in coco_data["annotations"]:
             annotations_by_image.setdefault(ann["image_id"], []).append(ann)
+        if "categories" in coco_data:
+            self.metadata.class_names = {cat["id"]: cat["name"] for cat in coco_data["categories"]}
 
         image_ids = list(images.keys())
 

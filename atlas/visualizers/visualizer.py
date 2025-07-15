@@ -89,10 +89,11 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                         if "class_names" in samples:
                             class_names = samples["class_names"]
                             if class_names:
+                                class_name = class_names.get(str(label), str(label))
                                 ax.text(
                                     bbox[0],
                                     bbox[1] - 2,
-                                    class_names[label],
+                                    class_name,
                                     bbox=dict(facecolor="red", alpha=0.5),
                                     fontsize=8,
                                     color="white",
