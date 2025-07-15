@@ -51,4 +51,4 @@ atlas.sink(
 )
 
 # Visualize some samples from the dataset
-atlas.visualize("examples/data/coco.lance", num_samples=1)
+atlas.visualize("examples/data/coco.lance", num_samples=1, output_file="examples/data/coco_visualization.png")
