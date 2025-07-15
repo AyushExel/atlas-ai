@@ -54,7 +54,7 @@ class CocoSinkTest(unittest.TestCase):
         dataset = lance.dataset(self.lance_path)
         self.assertEqual(dataset.count_rows(), 3)
         table = dataset.to_table()
-        self.assertEqual(table.column_names, ["image", "bbox", "label"])
+        self.assertEqual(table.column_names, ["image", "bbox", "label", "height", "width", "file_name"])
 
         images_data = []
         for i in range(3):
@@ -64,9 +64,9 @@ class CocoSinkTest(unittest.TestCase):
         self.assertEqual(table.column("image").to_pylist(), images_data)
         self.assertEqual(
             table.column("bbox").to_pylist(),
-            [[10, 20, 30, 40], [50, 60, 70, 80], [90, 100, 110, 120]],
+            [[[10, 20, 30, 40]], [[50, 60, 70, 80]], [[90, 100, 110, 120]]],
         )
-        self.assertEqual(table.column("label").to_pylist(), [1, 2, 1])
+        self.assertEqual(table.column("label").to_pylist(), [[1], [2], [1]])
 
 
 if __name__ == "__main__":
