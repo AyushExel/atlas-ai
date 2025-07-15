@@ -47,7 +47,7 @@ class CocoSegmentationDataset(BaseDataset):
         for ann in coco_data["annotations"]:
             annotations_by_image.setdefault(ann["image_id"], []).append(ann)
         if "categories" in coco_data:
-            self.metadata.class_names = [cat["name"] for cat in coco_data["categories"]]
+            self.metadata.class_names = {cat["id"]: cat["name"] for cat in coco_data["categories"]}
 
         image_ids = list(images.keys())
 
@@ -74,7 +74,7 @@ class CocoSegmentationDataset(BaseDataset):
 
                 annotations = annotations_by_image.get(image_id, [])
                 bboxes = [ann["bbox"] for ann in annotations]
-                labels = [ann["category_id"] for ann in annotations]
+                labels = [self.metadata.class_names[ann["category_id"]] for ann in annotations]
                 masks = []
                 for ann in annotations:
                     mask = np.zeros(
@@ -105,7 +105,7 @@ class CocoSegmentationDataset(BaseDataset):
                     pa.array(images_data, type=pa.binary()),
                     pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
                     pa.array(all_masks, type=pa.list_(pa.binary())),
-                    pa.array(all_labels, type=pa.list_(pa.int64())),
+                    pa.array(all_labels, type=pa.list_(pa.string())),
                     pa.array(heights, type=pa.int64()),
                     pa.array(widths, type=pa.int64()),
                     pa.array(file_names, type=pa.string()),

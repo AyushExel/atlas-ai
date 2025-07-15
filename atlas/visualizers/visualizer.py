@@ -90,7 +90,7 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                             ax.text(
                                 bbox[0],
                                 bbox[1] - 2,
-                                class_names[label],
+                                label,
                                 bbox=dict(facecolor="red", alpha=0.5),
                                 fontsize=8,
                                 color="white",
