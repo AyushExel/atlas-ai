@@ -4,3 +4,5 @@ pandas
 click
 Pillow
 psutil
+matplotlib
+PyYAML

@@ -95,7 +95,7 @@ class BaseDataset(ABC):
         schema = first_batch.schema
         if self.metadata:
             schema = schema.with_metadata({"metadata": json.dumps(self.metadata.__dict__)})
-        lance.write_dataset(new_reader(), uri, schema=schema, mode=mode, **kwargs)
+        lance.write_dataset(new_reader(), uri, schema, mode=mode, **kwargs)
 
     @staticmethod
     def get_metadata(uri: str) -> TaskMetadata:

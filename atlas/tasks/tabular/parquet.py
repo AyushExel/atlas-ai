@@ -39,7 +39,7 @@ class ParquetDataset(BaseDataset):
         Converts the dataset to Lance format and saves it to the given URI.
         """
         table = pq.read_table(self.data)
-        lance.write_dataset(table, uri, mode=mode, **kwargs)
+        lance.write_dataset(table, uri, mode=mode)
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """

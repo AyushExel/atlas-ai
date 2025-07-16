@@ -40,7 +40,7 @@ class CsvDataset(BaseDataset):
         Converts the dataset to Lance format and saves it to the given URI.
         """
         df = pd.read_csv(self.data)
-        lance.write_dataset(df, uri, mode=mode, **kwargs)
+        lance.write_dataset(df, uri, mode=mode)
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """

@@ -32,7 +32,7 @@ class VisualizerTest(unittest.TestCase):
         })
         import pyarrow as pa
         table = pa.Table.from_pandas(df)
-        lance.write_dataset(table, self.lance_path, mode="create")
+        lance.write_dataset(table, self.lance_path)
 
     def tearDown(self):
         if os.path.exists(self.lance_path):
