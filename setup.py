@@ -16,5 +16,8 @@ setup(
         'click',
         'Pillow',
         'psutil',
+        'matplotlib',
+        'pyyaml',
+        'pycocotools'
     ],
 )

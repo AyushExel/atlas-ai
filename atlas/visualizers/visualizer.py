@@ -77,11 +77,27 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                 if "bbox" in row and "label" in row:
                     bboxes = row["bbox"]
                     labels = row["label"]
+                    if not isinstance(labels, list):
+                        labels = [labels]
+                    if bboxes and not isinstance(bboxes[0], list):
+                        bboxes = [bboxes]
+
                     for bbox, label in zip(bboxes, labels):
+                        # Check if the bbox is in YOLO format (x_center, y_center, width, height)
+                        if all(0 <= c <= 1 for c in bbox):
+                            x_center, y_center, width, height = bbox
+                            image_width, image_height = image.size
+                            x_min = (x_center - width / 2) * image_width
+                            y_min = (y_center - height / 2) * image_height
+                            width *= image_width
+                            height *= image_height
+                        else:
+                            x_min, y_min, width, height = bbox
+
                         rect = patches.Rectangle(
-                            (bbox[0], bbox[1]),
-                            bbox[2],
-                            bbox[3],
+                            (x_min, y_min),
+                            width,
+                            height,
                             linewidth=1,
                             edgecolor="r",
                             facecolor="none",
@@ -92,8 +108,8 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                             if class_names:
                                 class_name = class_names.get(str(label), str(label))
                                 ax.text(
-                                    bbox[0],
-                                    bbox[1] - 2,
+                                    x_min,
+                                    y_min - 2,
                                     class_name,
                                     bbox=dict(facecolor="red", alpha=0.5),
                                     fontsize=8,

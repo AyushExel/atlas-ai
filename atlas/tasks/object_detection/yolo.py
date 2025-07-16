@@ -53,20 +53,30 @@ class YoloDataset(BaseDataset):
         """
         Yields batches of the dataset as Arrow RecordBatches.
         """
+        # The coco128 dataset has a subdirectory with the same name.
+        data_dir = os.path.join(self.data, "coco128")
+        if not os.path.exists(data_dir):
+            data_dir = self.data
+
+        image_dir = os.path.join(data_dir, "images", "train2017")
+        label_dir = os.path.join(data_dir, "labels", "train2017")
+
         image_files = []
-        label_files = []
-        for file in sorted(os.listdir(self.data)):
+        for file in sorted(os.listdir(image_dir)):
             if file.endswith((".jpg", ".png", ".jpeg")):
-                image_files.append(os.path.join(self.data, file))
-            elif file.endswith(".txt"):
-                label_files.append(os.path.join(self.data, file))
+                image_files.append(os.path.join(image_dir, file))
+
+        label_files = []
+        for file in sorted(os.listdir(label_dir)):
+            if file.endswith(".txt"):
+                label_files.append(os.path.join(label_dir, file))
 
         for i in range(0, len(image_files), batch_size):
             batch_image_files = image_files[i : i + batch_size]
 
             images_data = []
-            bboxes = []
-            labels = []
+            all_bboxes = []
+            all_labels = []
             heights = []
             widths = []
             file_names = []
@@ -81,27 +91,35 @@ class YoloDataset(BaseDataset):
                     heights.append(height)
                     file_names.append(os.path.basename(image_path))
 
-                label_path = os.path.splitext(image_path)[0] + ".txt"
-                if label_path in label_files:
-                    with open(label_path, "r") as f:
-                        for line in f:
-                            parts = line.strip().split()
-                            class_id = int(parts[0])
-                            x_center, y_center, width, height = map(float, parts[1:])
+                label_path = os.path.join(label_dir, os.path.basename(os.path.splitext(image_path)[0]) + ".txt")
+                if label_path not in label_files:
+                    all_bboxes.append([])
+                    all_labels.append([])
+                    continue
 
-                            bboxes.append(
-                                [
-                                    round(x, 6)
-                                    for x in [x_center, y_center, width, height]
-                                ]
-                            )
-                            labels.append(class_id)
+                bboxes = []
+                labels = []
+                with open(label_path, "r") as f:
+                    for line in f:
+                        parts = line.strip().split()
+                        class_id = int(parts[0])
+                        x_center, y_center, width, height = map(float, parts[1:])
+
+                        bboxes.append(
+                            [
+                                round(x, 6)
+                                for x in [x_center, y_center, width, height]
+                            ]
+                        )
+                        labels.append(class_id)
+                all_bboxes.append(bboxes)
+                all_labels.append(labels)
 
             batch = pa.RecordBatch.from_arrays(
                 [
                     pa.array(images_data, type=pa.binary()),
-                    pa.array(bboxes, type=pa.list_(pa.float32())),
-                    pa.array(labels, type=pa.int64()),
+                    pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
+                    pa.array(all_labels, type=pa.list_(pa.int64())),
                     pa.array(heights, type=pa.int64()),
                     pa.array(widths, type=pa.int64()),
                     pa.array(file_names, type=pa.string()),
