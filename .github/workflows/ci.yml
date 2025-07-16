@@ -20,6 +20,7 @@ jobs:
         run: |
           python examples/object_detection_coco.py
           python examples/object_detection_yolo.py
+          python examples/segmentation_coco.py
 
   unit-tests:
     runs-on: ubuntu-latest

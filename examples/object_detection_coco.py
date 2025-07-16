@@ -78,12 +78,26 @@ atlas.sink(
 )
 
 # Visualize some samples from the dataset
-atlas.visualize("examples/data/coco.lance", num_samples=1, output_file="examples/data/coco_visualization.png")
+atlas.visualize("examples/data/coco.lance", num_samples=5, output_file="examples/data/coco_visualization.png")
 
 # Verify that the dataset was created and is not empty
 import lance
 dataset = lance.dataset("examples/data/coco.lance")
-assert dataset.count_rows() > 0, "The dataset is empty"
+assert dataset.count_rows() == len(new_data["images"]), "The number of rows in the dataset does not match the number of images"
+
+# Verify the contents of the dataset
+table = dataset.to_table()
+for i, row in enumerate(table.to_pydict()["image"]):
+    image_info = new_data["images"][i]
+    annotations = [ann for ann in new_data["annotations"] if ann["image_id"] == image_info["id"]]
+
+    assert table.to_pydict()["file_name"][i] == image_info["file_name"], "File names do not match"
+
+    for j, bbox in enumerate(table.to_pydict()["bbox"][i]):
+        assert bbox == annotations[j]["bbox"], "Bounding boxes do not match"
+
+    for j, label in enumerate(table.to_pydict()["label"][i]):
+        assert label == annotations[j]["category_id"], "Labels do not match"
 
 # Verify that the visualization was created
 assert os.path.exists("examples/data/coco_visualization.png"), "The visualization was not created"
