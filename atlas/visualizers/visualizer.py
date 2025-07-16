@@ -81,10 +81,19 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
                         labels = [labels]
                     if bboxes and not isinstance(bboxes[0], list):
                         bboxes = [bboxes]
+
                     for bbox, label in zip(bboxes, labels):
-                        x_center, y_center, width, height = bbox
-                        x_min = x_center - width / 2
-                        y_min = y_center - height / 2
+                        # Check if the bbox is in YOLO format (x_center, y_center, width, height)
+                        if all(0 <= c <= 1 for c in bbox):
+                            x_center, y_center, width, height = bbox
+                            image_width, image_height = image.size
+                            x_min = (x_center - width / 2) * image_width
+                            y_min = (y_center - height / 2) * image_height
+                            width *= image_width
+                            height *= image_height
+                        else:
+                            x_min, y_min, width, height = bbox
+
                         rect = patches.Rectangle(
                             (x_min, y_min),
                             width,

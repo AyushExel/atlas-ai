@@ -1,24 +1,31 @@
 import atlas
 import os
-from PIL import Image
+import requests
+import zipfile
+
+# URL of the dataset to download
+DATASET_URL = ""  # Please fill in the URL of the dataset
 
 # Create a temporary directory to store the data
-if not os.path.exists("examples/data/yolo/images"):
-    os.makedirs("examples/data/yolo/images")
-if not os.path.exists("examples/data/yolo/labels"):
-    os.makedirs("examples/data/yolo/labels")
+data_dir = "examples/data/yolo"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
-# Create a dummy image
-image = Image.new("RGB", (100, 100), color="red")
-image.save("examples/data/yolo/images/dummy.jpg")
+# Download and extract the dataset
+if DATASET_URL:
+    response = requests.get(DATASET_URL)
+    zip_path = os.path.join(data_dir, "dataset.zip")
+    with open(zip_path, "wb") as f:
+        f.write(response.content)
 
-# Create a dummy label file
-with open("examples/data/yolo/labels/dummy.txt", "w") as f:
-    f.write("0 0.5 0.5 0.5 0.5")
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(data_dir)
+
+    os.remove(zip_path)
 
 # Sink the YOLO dataset to a Lance dataset
 atlas.sink(
-    "examples/data/yolo",
+    data_dir,
     "examples/data/yolo.lance",
     options={"task": "object_detection", "format": "yolo"},
 )
