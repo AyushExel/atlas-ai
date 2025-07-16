@@ -28,36 +28,42 @@ if not os.path.exists(annotations_dir):
 else:
     print(f"{annotations_dir} already exists, skipping extraction.")
 
-# Download a single image if not already present
-image_path = "examples/data/coco/images/000000289343.jpg"
-image_url = "http://images.cocodataset.org/val2017/000000289343.jpg"
-
-if not os.path.exists(image_path):
-    response = requests.get(image_url, stream=True)
-    with open(image_path, "wb") as f:
-        for chunk in response.iter_content(chunk_size=128):
-            f.write(chunk)
-else:
-    print(f"{image_path} already exists, skipping download.")
-
-# Create a new annotation file with only the downloaded image and its annotations if not already present
+# Create a new annotation file with the first N images and their annotations if not already present
 instances_json_path = "examples/data/coco/annotations/instances_val2017.json"
 small_json_path = "examples/data/coco/annotations/instances_val2017_small.json"
+N = 10  # Number of images to include
 
-if not os.path.exists(small_json_path):
-    with open(instances_json_path, "r") as f:
-        data = json.load(f)
+with open(instances_json_path, "r") as f:
+    data = json.load(f)
 
-    new_data = {
-        "images": [img for img in data["images"] if img["id"] == 289343],
-        "annotations": [ann for ann in data["annotations"] if ann["image_id"] == 289343],
-        "categories": data["categories"],
-    }
+image_infos = data["images"][:N]
+image_ids = [img["id"] for img in image_infos]
 
-    with open(small_json_path, "w") as f:
-        json.dump(new_data, f)
-else:
-    print(f"{small_json_path} already exists, skipping creation.")
+new_data = {
+    "images": [img for img in data["images"] if img["id"] in image_ids],
+    "annotations": [ann for ann in data["annotations"] if ann["image_id"] in image_ids],
+    "categories": data["categories"],
+}
+
+with open(small_json_path, "w") as f:
+    json.dump(new_data, f)
+
+
+# Download all images referenced in the filtered annotation file if not already present
+with open(small_json_path, "r") as f:
+    filtered_data = json.load(f)
+
+for img in filtered_data["images"]:
+    file_name = img["file_name"]
+    image_path = f"examples/data/coco/images/{file_name}"
+    image_url = f"http://images.cocodataset.org/val2017/{file_name}"
+    if not os.path.exists(image_path):
+        response = requests.get(image_url, stream=True)
+        with open(image_path, "wb") as f_img:
+            for chunk in response.iter_content(chunk_size=128):
+                f_img.write(chunk)
+    else:
+        print(f"{image_path} already exists, skipping download.")
 
 # Sink the COCO dataset to a Lance dataset
 atlas.sink(
@@ -72,4 +78,4 @@ atlas.sink(
 )
 
 # Visualize some samples from the dataset
-atlas.visualize("examples/data/coco.lance", num_samples=1, output_file="examples/data/coco_visualization.png")
+atlas.visualize("examples/data/coco.lance", num_samples=10)

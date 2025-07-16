@@ -17,6 +17,7 @@
 import random
 import io
 import math
+import numpy as np
 
 import lance
 from PIL import Image
@@ -101,9 +102,15 @@ def visualize(uri: str, num_samples: int = 5, output_file: str = None):
 
                 if "mask" in row:
                     masks = row["mask"]
-                    for mask_bytes in masks:
-                        mask_image = Image.open(io.BytesIO(mask_bytes)).convert("RGBA")
-                        ax.imshow(mask_image, alpha=0.7)
+                    for idx, mask_bytes in enumerate(masks):
+                        mask_image = Image.open(io.BytesIO(mask_bytes)).convert("L")
+                        mask_np = np.array(mask_image)
+                        # Generate a random color for each mask
+                        color = np.random.randint(0, 255, size=3)
+                        rgba_mask = np.zeros((*mask_np.shape, 4), dtype=np.uint8)
+                        rgba_mask[mask_np > 0, :3] = color  # Set color where mask is present
+                        rgba_mask[mask_np > 0, 3] = 130     # Set alpha (transparency)
+                        ax.imshow(rgba_mask)
 
             except Exception as e:
                 print(f"Could not display image: {e}")

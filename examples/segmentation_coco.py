@@ -54,4 +54,4 @@ atlas.sink(
 )
 
 # Visualize some samples from the dataset
-atlas.visualize("examples/data/coco_segmentation.lance", num_samples=1)
+atlas.visualize("examples/data/coco_segmentation.lance", num_samples=10)

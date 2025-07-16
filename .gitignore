@@ -5,3 +5,6 @@ temp_data/
 temp_extract/
 .venv
 build
+__pycache__/
+**.egg-info
+*.lance/

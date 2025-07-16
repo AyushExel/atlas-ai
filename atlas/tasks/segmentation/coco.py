@@ -18,8 +18,9 @@ import json
 from typing import Generator
 
 import pyarrow as pa
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
+import io
 
 from atlas.tasks.data_model.base import BaseDataset
 
@@ -83,8 +84,6 @@ class CocoSegmentationDataset(BaseDataset):
                     if isinstance(ann["segmentation"], list):
                         for seg in ann["segmentation"]:
                             poly = np.array(seg).reshape((len(seg) // 2, 2))
-                            from PIL import ImageDraw
-
                             img = Image.new(
                                 "L", (image_info["width"], image_info["height"]), 0
                             )
@@ -100,7 +99,10 @@ class CocoSegmentationDataset(BaseDataset):
                             image_info["width"],
                         )
                         mask = np.maximum(mask, mask_utils.decode(rle))
-                    masks.append(mask.tobytes())
+                    img = Image.fromarray(mask * 255)  # scale mask to 0-255
+                    buf = io.BytesIO()
+                    img.save(buf, format='PNG')
+                    masks.append(buf.getvalue())
 
                 all_bboxes.append(bboxes)
                 all_masks.append(masks)
