@@ -28,6 +28,7 @@ atlas_ai.egg-info/top_level.txt
 tests/test_coco_segmentation_sink.py
 tests/test_coco_sink.py
 tests/test_csv_sink.py
+tests/test_image_metadata.py
 tests/test_parquet_sink.py
 tests/test_system.py
 tests/test_visualizer.py

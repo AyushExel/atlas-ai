@@ -53,13 +53,18 @@ class YoloDataset(BaseDataset):
         """
         Yields batches of the dataset as Arrow RecordBatches.
         """
+        image_dir = os.path.join(self.data, "images")
+        label_dir = os.path.join(self.data, "labels")
+
         image_files = []
-        label_files = []
-        for file in sorted(os.listdir(self.data)):
+        for file in sorted(os.listdir(image_dir)):
             if file.endswith((".jpg", ".png", ".jpeg")):
-                image_files.append(os.path.join(self.data, file))
-            elif file.endswith(".txt"):
-                label_files.append(os.path.join(self.data, file))
+                image_files.append(os.path.join(image_dir, file))
+
+        label_files = []
+        for file in sorted(os.listdir(label_dir)):
+            if file.endswith(".txt"):
+                label_files.append(os.path.join(label_dir, file))
 
         for i in range(0, len(image_files), batch_size):
             batch_image_files = image_files[i : i + batch_size]
@@ -81,21 +86,23 @@ class YoloDataset(BaseDataset):
                     heights.append(height)
                     file_names.append(os.path.basename(image_path))
 
-                label_path = os.path.splitext(image_path)[0] + ".txt"
-                if label_path in label_files:
-                    with open(label_path, "r") as f:
-                        for line in f:
-                            parts = line.strip().split()
-                            class_id = int(parts[0])
-                            x_center, y_center, width, height = map(float, parts[1:])
+                label_path = os.path.join(label_dir, os.path.basename(os.path.splitext(image_path)[0]) + ".txt")
+                if label_path not in label_files:
+                    continue
 
-                            bboxes.append(
-                                [
-                                    round(x, 6)
-                                    for x in [x_center, y_center, width, height]
-                                ]
-                            )
-                            labels.append(class_id)
+                with open(label_path, "r") as f:
+                    for line in f:
+                        parts = line.strip().split()
+                        class_id = int(parts[0])
+                        x_center, y_center, width, height = map(float, parts[1:])
+
+                        bboxes.append(
+                            [
+                                round(x, 6)
+                                for x in [x_center, y_center, width, height]
+                            ]
+                        )
+                        labels.append(class_id)
 
             batch = pa.RecordBatch.from_arrays(
                 [
