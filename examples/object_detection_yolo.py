@@ -45,7 +45,8 @@ table = dataset.to_table()
 for i, row in enumerate(table.to_pydict()["image"]):
     file_name = table.to_pydict()["file_name"][i]
     label_path = os.path.join(data_dir, "coco128", "labels", "train2017", os.path.splitext(file_name)[0] + ".txt")
-
+    if not os.path.exists(label_path):
+        continue
     with open(label_path, "r") as f:
         lines = f.readlines()
 
