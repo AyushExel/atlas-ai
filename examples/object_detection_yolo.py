@@ -4,7 +4,7 @@ import requests
 import zipfile
 
 # URL of the dataset to download
-DATASET_URL = ""  # Please fill in the URL of the dataset
+DATASET_URL = "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco128.zip"
 
 # Create a temporary directory to store the data
 data_dir = "examples/data/yolo"

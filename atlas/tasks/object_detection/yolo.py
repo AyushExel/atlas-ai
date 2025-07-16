@@ -53,8 +53,13 @@ class YoloDataset(BaseDataset):
         """
         Yields batches of the dataset as Arrow RecordBatches.
         """
-        image_dir = os.path.join(self.data, "images")
-        label_dir = os.path.join(self.data, "labels")
+        # The coco128 dataset has a subdirectory with the same name.
+        data_dir = os.path.join(self.data, "coco128")
+        if not os.path.exists(data_dir):
+            data_dir = self.data
+
+        image_dir = os.path.join(data_dir, "images", "train2017")
+        label_dir = os.path.join(data_dir, "labels", "train2017")
 
         image_files = []
         for file in sorted(os.listdir(image_dir)):
@@ -70,8 +75,8 @@ class YoloDataset(BaseDataset):
             batch_image_files = image_files[i : i + batch_size]
 
             images_data = []
-            bboxes = []
-            labels = []
+            all_bboxes = []
+            all_labels = []
             heights = []
             widths = []
             file_names = []
@@ -88,8 +93,12 @@ class YoloDataset(BaseDataset):
 
                 label_path = os.path.join(label_dir, os.path.basename(os.path.splitext(image_path)[0]) + ".txt")
                 if label_path not in label_files:
+                    all_bboxes.append([])
+                    all_labels.append([])
                     continue
 
+                bboxes = []
+                labels = []
                 with open(label_path, "r") as f:
                     for line in f:
                         parts = line.strip().split()
@@ -103,12 +112,14 @@ class YoloDataset(BaseDataset):
                             ]
                         )
                         labels.append(class_id)
+                all_bboxes.append(bboxes)
+                all_labels.append(labels)
 
             batch = pa.RecordBatch.from_arrays(
                 [
                     pa.array(images_data, type=pa.binary()),
-                    pa.array(bboxes, type=pa.list_(pa.float32())),
-                    pa.array(labels, type=pa.int64()),
+                    pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
+                    pa.array(all_labels, type=pa.list_(pa.int64())),
                     pa.array(heights, type=pa.int64()),
                     pa.array(widths, type=pa.int64()),
                     pa.array(file_names, type=pa.string()),
