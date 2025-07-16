@@ -16,5 +16,6 @@ setup(
         'click',
         'Pillow',
         'psutil',
+        'matplotlib'
     ],
 )
