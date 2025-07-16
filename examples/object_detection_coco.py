@@ -78,4 +78,12 @@ atlas.sink(
 )
 
 # Visualize some samples from the dataset
-atlas.visualize("examples/data/coco.lance", num_samples=10)
+atlas.visualize("examples/data/coco.lance", num_samples=1, output_file="examples/data/coco_visualization.png")
+
+# Verify that the dataset was created and is not empty
+import lance
+dataset = lance.dataset("examples/data/coco.lance")
+assert dataset.count_rows() > 0, "The dataset is empty"
+
+# Verify that the visualization was created
+assert os.path.exists("examples/data/coco_visualization.png"), "The visualization was not created"
