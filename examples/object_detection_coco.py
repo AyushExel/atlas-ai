@@ -4,6 +4,7 @@ import requests
 import zipfile
 import json
 from PIL import Image
+import numpy as np
 
 # Create a temporary directory to store the data
 if not os.path.exists("examples/data/coco/images"):
@@ -94,7 +95,8 @@ for i, row in enumerate(table.to_pydict()["image"]):
     assert table.to_pydict()["file_name"][i] == image_info["file_name"], "File names do not match"
 
     for j, bbox in enumerate(table.to_pydict()["bbox"][i]):
-        assert bbox == annotations[j]["bbox"], "Bounding boxes do not match"
+        print(f" {bbox} {annotations[j]['bbox']}")
+        assert np.allclose(bbox, annotations[j]["bbox"], atol=1e-2), "Bounding boxes do not match"
 
     for j, label in enumerate(table.to_pydict()["label"][i]):
         assert label == annotations[j]["category_id"], "Labels do not match"

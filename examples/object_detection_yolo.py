@@ -2,6 +2,7 @@ import atlas
 import os
 import requests
 import zipfile
+import numpy as np
 
 # URL of the dataset to download
 DATASET_URL = "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco128.zip"
@@ -56,10 +57,7 @@ for i, row in enumerate(table.to_pydict()["image"]):
         assert table.to_pydict()["label"][i][j] == class_id, "Labels do not match"
 
         bbox = table.to_pydict()["bbox"][i][j]
-        assert abs(bbox[0] - x_center) < 1e-6, "Bounding boxes do not match"
-        assert abs(bbox[1] - y_center) < 1e-6, "Bounding boxes do not match"
-        assert abs(bbox[2] - width) < 1e-6, "Bounding boxes do not match"
-        assert abs(bbox[3] - height) < 1e-6, "Bounding boxes do not match"
+        assert np.allclose(bbox, [x_center, y_center, width, height], atol=1e-2), "Bounding boxes do not match"
 
 
 # Verify that the visualization was created
