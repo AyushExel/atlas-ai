@@ -1,16 +1,38 @@
 # Atlas
 
+<p align="center">
+  <img src="https://storage.googleapis.com/atlas-resources/logo.png" alt="Atlas Logo" width="200"/>
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/atlas-ai/">
+    <img src="https://img.shields.io/pypi/v/atlas-ai.svg" alt="PyPI Version">
+  </a>
+  <a href="https://github.com/your-repo/atlas/actions">
+    <img src="https://github.com/your-repo/atlas/workflows/CI/badge.svg" alt="CI">
+  </a>
+  <a href="https://codecov.io/gh/your-repo/atlas">
+    <img src="https://codecov.io/gh/your-repo/atlas/branch/main/graph/badge.svg" alt="Codecov">
+  </a>
+</p>
+
 Atlas is a data-centric AI framework for curating, indexing, and analyzing massive datasets for deep learning applications. It provides a suite of tools to streamline the entire data lifecycle, from initial data ingestion to model training and analysis.
 
 ## Vision
 
-The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations:
+The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations: **Sink**, **Index**, and **Analyse**.
 
--   **Sink:** Ingest data from any source and format into an optimized Lance dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
--   **Index:** Create powerful, multi-modal indexes on your data to enable fast and efficient search and retrieval. Whether you're working with images, text, or other data types, Atlas will help you find the data you need in seconds.
--   **Analyse:** Analyse your datasets to gain insights, identify patterns, and debug your models. Atlas will provide tools for data visualization, embedding analysis, and model performance evaluation.
+Our first focus is on the **Sink** operation, which allows you to ingest data from any source and format into an optimized [Lance](https://lancedb.github.io/lance/) dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
 
-While the primary focus is currently on the `sink` operation, the long-term goal is to build a comprehensive ecosystem for data-centric AI.
+Here's a high-level overview of the sinking process:
+
+```
+        +-----------------------+      +----------------------+      +---------------------+
+        |   Raw Data Sources    |      |      Atlas Sink      |      |   Lance Dataset     |
+        |  (COCO, YOLO, CSV)    |----->|  (Auto-detection,    |----->|  (Optimized Storage)|
+        |                       |      |   Metadata Extraction)|      |                     |
+        +-----------------------+      +----------------------+      +---------------------+
+```
 
 ## Features
 
@@ -28,90 +50,144 @@ pip install atlas-ai
 
 ## Usage
 
-### Command-Line Interface
-
+### CLI
 
 The `atlas` CLI provides a simple way to interact with your datasets.
 
-#### Sinking a Dataset
-
-To sink a dataset, simply point the `atlas sink` command to your data source. Atlas will automatically infer the dataset type and create a Lance dataset in the same directory.
-
-<details>
-<summary>Sink Syntax</summary>
-
-#### Object Detection
-
--   **COCO:** Provide the path to the annotation `.json` file.
-    ```bash
-    atlas sink /path/to/your/coco_annotations.json
-    ```
--   **YOLO:** Provide the path to the dataset directory.
-    ```bash
-    atlas sink /path/to/your/yolo_dataset/
-    ```
-
-#### Segmentation
-
--   **COCO:** Provide the path to the annotation `.json` file.
-    ```bash
-    atlas sink /path/to/your/coco_annotations.json
-    ```
-
-#### Tabular
-
--   **CSV:** Provide the path to the `.csv` file.
-    ```bash
-    atlas sink /path/to/your/data.csv
-    ```
--   **Parquet:** Provide the path to the `.parquet` file.
-    ```bash
-    atlas sink /path/to/your/data.parquet
-    ```
-
-</details>
-
-<details>
-<summary>Manual Sink / Build on Top</summary>
-
-You can also import specific task types and use them directly or even subclass them for more advanced use cases.
-
-```python
-from atlas.tasks.object_detection import COCOObjectDetection
-
-# Initialize the task
-coco_task = COCOObjectDetection(name="my_coco_task")
-
-# Sink the dataset
-coco_task.sink("/path/to/your/coco_annotations.json", "/path/to/your/dataset.lance")
-```
-
-</details>
-
-#### Visualizing a Dataset
-
-To visualize a few samples from your dataset, use the `atlas visualize` command:
+**Object Detection (COCO)**
 
 ```bash
-atlas visualize /path/to/your/dataset.lance --num-samples 10
+atlas sink examples/data/coco/annotations/instances_val2017_small.json
 ```
+
+**Lance Dataset Output:**
+
+<details>
+<summary>Click to see schema and sample data</summary>
+
+**Schema:**
+```
+- image: binary
+- bbox: list<item: list<item: float>>
+- label: list<item: int64>
+- keypoints: list<item: list<item: float>>
+- captions: list<item: string>
+- height: int64
+- width: int64
+- file_name: string
+```
+
+**Sample Data:**
+```
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
+| image                              | file_name        |   width |   height | label                                                      | bbox                                                     |
++====================================+==================+=========+= =========+============================================================+==========================================================+
+| b'\xff\xd8\xff\xe0\x00\x10JFIF'... | 000000397133.jpg |     640 |      427 | [44 67  1 49 51 51 79  1 47 47 51 51 56 50 56 56 79 57 81] | [array([217.62, 240.54,  38.99,  57.75], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([  1.  , 240.24, 346.63, 186.76], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([388.66,  69.92, 109.41, 277.62], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([135.57, 249.43,  22.32,  28.79], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 31.28, 344.  ,  68.12,  40.83], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 59.63, 287.36,  76.07,  41.3 ], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([  1.36, 164.33, 192.56,  98.37], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([  0.  , 262.81,  62.16,  36.77], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([119.4 , 272.51,  24.82,  34.25], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([141.47, 267.91,  32.19,  35.86], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([155.97, 168.95,  26.03,  17.13], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([157.2 , 114.15,  17.86,  15.82], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 98.75, 304.78,  10.78,   5.57], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([166.03, 256.36,   8.82,  18.58], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 86.41, 293.97,  23.96,  11.18], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 70.14, 296.16,   9.28,   4.58], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([  0.  , 210.9 , 191.36,  98.98], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([ 96.69, 297.09,   7.84,   4.86], dtype=float32)  |
+|                                    |                  |         |          |                                                            |  array([497.25, 203.4 , 122.01,  28.61], dtype=float32)] |
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
+```
+</details>
+
+<details>
+<summary>Other CLI Examples</summary>
+
+**Object Detection (YOLO)**
+```bash
+atlas sink examples/data/yolo/coco128
+```
+
+**Segmentation (COCO)**
+```bash
+atlas sink examples/data/coco/annotations/instances_val2017_small.json --task segmentation
+```
+
+**Tabular (CSV)**
+```bash
+atlas sink examples/data/dummy.csv
+```
+</details>
 
 ### Python API
 
 The `atlas` Python API provides more control and flexibility for advanced use cases.
 
+**Object Detection (COCO)**
 ```python
 import atlas
-
-# Sink a dataset
-atlas.sink("/path/to/your/coco_dataset/")
-
-# Sink a dataset with specific options
-atlas.sink("/path/to/your/data", uri="/path/to/your/dataset.lance", options={"task": "object_detection", "format": "coco"})
-
-# Visualize a dataset
-atlas.visualize("/path/to/your/dataset.lance", num_samples=10)
+atlas.sink("examples/data/coco/annotations/instances_val2017_small.json")
 ```
+
+**Visualization:**
+
+<p align="center">
+  <img src="https://storage.googleapis.com/atlas-resources/coco_visualization.png" alt="COCO Visualization" width="500"/>
+</p>
+
+<details>
+<summary>Other Python API Examples</summary>
+
+**Object Detection (YOLO)**
+```python
+import atlas
+atlas.sink("examples/data/yolo/coco128")
+```
+
+**Segmentation (COCO)**
+```python
+import atlas
+atlas.sink("examples/data/coco/annotations/instances_val2017_small.json", options={"task": "segmentation"})
+```
+
+**Tabular (CSV)**
+```python
+import atlas
+atlas.sink("examples/data/dummy.csv")
+```
+</details>
+
+<details>
+<summary>Manual Sink / Build on Top</summary>
+
+You can also import specific task types and use them directly or even subclass them for more advanced use cases. For example, let's create a custom sink that adds an `image_url` to the COCO dataset.
+
+```python
+from atlas.tasks.object_detection.coco import CocoDataset
+import pyarrow as pa
+
+class CocoDatasetWithImageURL(CocoDataset):
+    def __init__(self, data: str, options: dict = None):
+        super().__init__(data, options)
+        self.base_url = "http://images.cocodataset.org/val2017/"
+
+    def to_batches(self, batch_size: int = 1024):
+        for batch in super().to_batches(batch_size):
+            file_names = batch.column("file_name").to_pylist()
+            image_urls = [self.base_url + file_name for file_name in file_names]
+            yield batch.add_column(0, pa.field("image_url", pa.string()), pa.array(image_urls, type=pa.string()))
+
+# Usage
+from atlas.data_sinks import sink
+sink(data_class=CocoDatasetWithImageURL, data="examples/data/coco/annotations/instances_val2017_small.json", uri="coco_with_url.lance")
+```
+
+</details>
 
 ## Future Development
 
