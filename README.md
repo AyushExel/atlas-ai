@@ -18,11 +18,19 @@
 
 Atlas is a data-centric AI framework for curating, indexing, and analyzing massive datasets for deep learning applications. It provides a suite of tools to streamline the entire data lifecycle, from initial data ingestion to model training and analysis.
 
-## Vision
+## Core Operations
 
-The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations: **Sink**, **Index**, and **Analyse**.
+The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations:
 
-Our first focus is on the **Sink** operation, which allows you to ingest data from any source and format into an optimized [Lance](https://lancedb.github.io/lance/) dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
+-   **Sink:** Ingest data from any source and format into an optimized Lance dataset.
+-   **Index:** Create powerful, multi-modal indexes on your data to enable fast and efficient search and retrieval.
+-   **Analyse:** Analyse your datasets to gain insights, identify patterns, and debug your models.
+
+---
+
+# Sink
+
+The **Sink** operation allows you to ingest data from any source and format into an optimized [Lance](https://lancedb.github.io/lance/) dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
 
 Here's a high-level overview of the sinking process:
 
@@ -60,7 +68,9 @@ The `atlas` CLI provides a simple way to interact with your datasets.
 atlas sink examples/data/coco/annotations/instances_val2017_small.json
 ```
 
-**Lance Dataset Output:**
+<p align="center">
+  <img src="examples/data/coco_visualization.png" alt="COCO Visualization" width="500"/>
+</p>
 
 <details>
 <summary>Click to see schema and sample data</summary>
@@ -81,47 +91,43 @@ atlas sink examples/data/coco/annotations/instances_val2017_small.json
 ```
 +------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
 | image                              | file_name        |   width |   height | label                                                      | bbox                                                     |
-+====================================+==================+=========+= =========+============================================================+==========================================================+
++====================================+==================+=========+==========+============================================================+==========================================================+
 | b'\xff\xd8\xff\xe0\x00\x10JFIF'... | 000000397133.jpg |     640 |      427 | [44 67  1 49 51 51 79  1 47 47 51 51 56 50 56 56 79 57 81] | [array([217.62, 240.54,  38.99,  57.75], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([  1.  , 240.24, 346.63, 186.76], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([388.66,  69.92, 109.41, 277.62], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([135.57, 249.43,  22.32,  28.79], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 31.28, 344.  ,  68.12,  40.83], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 59.63, 287.36,  76.07,  41.3 ], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([  1.36, 164.33, 192.56,  98.37], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([  0.  , 262.81,  62.16,  36.77], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([119.4 , 272.51,  24.82,  34.25], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([141.47, 267.91,  32.19,  35.86], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([155.97, 168.95,  26.03,  17.13], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([157.2 , 114.15,  17.86,  15.82], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 98.75, 304.78,  10.78,   5.57], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([166.03, 256.36,   8.82,  18.58], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 86.41, 293.97,  23.96,  11.18], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 70.14, 296.16,   9.28,   4.58], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([  0.  , 210.9 , 191.36,  98.98], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([ 96.69, 297.09,   7.84,   4.86], dtype=float32)  |
-|                                    |                  |         |          |                                                            |  array([497.25, 203.4 , 122.01,  28.61], dtype=float32)] |
 +------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
 ```
 </details>
 
 <details>
-<summary>Other CLI Examples</summary>
+<summary>Object Detection (YOLO)</summary>
 
-**Object Detection (YOLO)**
 ```bash
 atlas sink examples/data/yolo/coco128
 ```
+<p align="center">
+  <img src="examples/data/yolo_visualization.png" alt="YOLO Visualization" width="500"/>
+</p>
 
-**Segmentation (COCO)**
+</details>
+
+<details>
+<summary>Segmentation (COCO)</summary>
+
 ```bash
 atlas sink examples/data/coco/annotations/instances_val2017_small.json --task segmentation
 ```
+<p align="center">
+  <img src="examples/data/coco_segmentation_visualization.png" alt="COCO Segmentation Visualization" width="500"/>
+</p>
 
-**Tabular (CSV)**
+</details>
+
+<details>
+<summary>Tabular (CSV)</summary>
+
 ```bash
 atlas sink examples/data/dummy.csv
 ```
+
 </details>
 
 ### Python API
@@ -134,28 +140,27 @@ import atlas
 atlas.sink("examples/data/coco/annotations/instances_val2017_small.json")
 ```
 
-**Visualization:**
-
-<p align="center">
-  <img src="https://storage.googleapis.com/atlas-resources/coco_visualization.png" alt="COCO Visualization" width="500"/>
-</p>
-
 <details>
-<summary>Other Python API Examples</summary>
+<summary>Object Detection (YOLO)</summary>
 
-**Object Detection (YOLO)**
 ```python
 import atlas
 atlas.sink("examples/data/yolo/coco128")
 ```
+</details>
 
-**Segmentation (COCO)**
+<details>
+<summary>Segmentation (COCO)</summary>
+
 ```python
 import atlas
 atlas.sink("examples/data/coco/annotations/instances_val2017_small.json", options={"task": "segmentation"})
 ```
+</details>
 
-**Tabular (CSV)**
+<details>
+<summary>Tabular (CSV)</summary>
+
 ```python
 import atlas
 atlas.sink("examples/data/dummy.csv")
@@ -189,18 +194,4 @@ sink(data_class=CocoDatasetWithImageURL, data="examples/data/coco/annotations/in
 
 </details>
 
-## Future Development
-
-Atlas is under active development, with a focus on expanding its capabilities to support a wider range of tasks and data modalities. Future plans include:
-
--   **LLM/VLM Dataset Support:** Adding support for pre-training and post-training datasets for Large Language Models (LLMs) and Vision-Language Models (VLMs).
--   **Advanced Indexing:** Implementing advanced indexing strategies, such as vector search and metadata filtering, to enable fast and efficient data retrieval.
--   **Data Analysis and Visualization:** Building a suite of tools for analyzing and visualizing datasets, including embedding analysis, data distribution analysis, and model performance evaluation.
-
-## Contributing
-
-Contributions are welcome! Please see the contributing guide for more information.
-
-## License
-
-Atlas is licensed under the Apache License, Version 2.0. See the LICENSE file for more information.
+```
