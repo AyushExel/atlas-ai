@@ -19,23 +19,61 @@ pip install atlas-ai
 
 ## Usage
 
-### Python API
+### The `sink` function
+
+The `atlas.sink` function is the easiest way to convert your data into a Lance dataset. It automatically infers the data format and task from the file extension, and it can handle a variety of data sources.
+
+Here are some examples of how to use the `sink` function:
 
 ```python
 import atlas
 
-# Sink a CSV file to a Lance dataset
+# Sink a CSV file
 atlas.sink("my_data.csv", "my_dataset.lance")
 
-# Sink a COCO object detection dataset to a Lance dataset
-atlas.sink("coco_annotations.json", "my_dataset.lance", options={"task": "object_detection", "format": "coco"})
+# Sink a Parquet file
+atlas.sink("my_data.parquet", "my_dataset.lance")
 
-# Sink a COCO segmentation dataset to a Lance dataset
-atlas.sink("coco_annotations.json", "my_dataset.lance", options={"task": "segmentation", "format": "coco"})
+# Sink a COCO object detection dataset
+atlas.sink("coco_annotations.json", "my_dataset.lance")
 
-# Sink a YOLO dataset to a Lance dataset
-atlas.sink("yolo_data_dir", "my_dataset.lance", options={"task": "object_detection", "format": "yolo"})
+# Sink a YOLO object detection dataset
+atlas.sink("yolo_data_dir", "my_dataset.lance")
 ```
+
+For more complex use cases, you can use the `options` parameter to specify the task, format, and other options. For example, to sink a COCO segmentation dataset, you can do the following:
+
+```python
+atlas.sink("coco_annotations.json", "my_dataset.lance", options={"task": "segmentation"})
+```
+
+### Pythonic API
+
+For more control over the data sinking process, you can use the Pythonic API. This API allows you to instantiate dataset objects directly and then call the `to_lance` method on them.
+
+Here's how you can use the Pythonic API to sink a COCO object detection dataset:
+
+```python
+from atlas import CocoDataset
+
+dataset = CocoDataset("coco_annotations.json")
+dataset.to_lance("my_dataset.lance")
+```
+
+This approach is more flexible and allows you to inspect the dataset object before sinking it to a Lance dataset.
+
+### Supported Tasks
+
+Atlas supports the following tasks:
+
+- **Object Detection:**
+    - COCO (`.json`)
+    - YOLO (directory)
+- **Segmentation:**
+    - COCO (`.json`)
+- **Tabular:**
+    - CSV (`.csv`)
+    - Parquet (`.parquet`)
 
 ### Command-Line Interface
 

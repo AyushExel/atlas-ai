@@ -52,7 +52,7 @@ class BaseDataset(ABC):
         uri: str,
         mode: str = "create",
         batch_size: Optional[int] = None,
-        **kwargs: Optional[Dict[str, Any]],
+        **kwargs,
     ) -> None:
         """
         Converts the dataset to Lance format and saves it to the given URI.
