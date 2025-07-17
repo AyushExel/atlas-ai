@@ -7,4 +7,7 @@ Requires-Dist: pandas
 Requires-Dist: click
 Requires-Dist: Pillow
 Requires-Dist: psutil
+Requires-Dist: matplotlib
+Requires-Dist: pyyaml
+Requires-Dist: pycocotools
 Dynamic: requires-dist
