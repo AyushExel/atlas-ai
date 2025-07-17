@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import json
+import os
 from typing import Generator
 
 import pyarrow as pa
@@ -22,18 +23,32 @@ import pyarrow as pa
 from atlas.tasks.data_model.base import BaseDataset
 
 
-import os
-
 class CocoDataset(BaseDataset):
     """
     A dataset that reads data from a COCO JSON file.
     """
-    def __init__(self, data: str, options: dict = None):
+
+    def __init__(self, data: str, options: dict = None, **kwargs):
         super().__init__(data)
         self.options = options or {}
-        self.image_root = self.options.get("image_root")
+        self.image_root = self.options.get("image_root") or kwargs.get("image_root")
+        if self.image_root is None:
+            self.image_root = self._infer_image_root()
 
-    def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
+    def _infer_image_root(self) -> str:
+        """
+        Infers the image root directory from the annotation file path.
+        """
+        # Check for common image directory names relative to the annotation file
+        annotation_dir = os.path.dirname(self.data)
+        common_image_dirs = ["images", "train2017", "val2017", "test2017"]
+        for dir_name in common_image_dirs:
+            image_dir = os.path.join(annotation_dir, dir_name)
+            if os.path.isdir(image_dir):
+                return image_dir
+        return annotation_dir
+
+    def to_batches(self, batch_size: int = 1024, **kwargs) -> Generator[pa.RecordBatch, None, None]:
         """
         Yields batches of the dataset as Arrow RecordBatches.
         """
