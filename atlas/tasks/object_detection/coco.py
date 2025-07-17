@@ -66,45 +66,43 @@ class CocoDataset(BaseDataset):
 
         for i in range(0, len(image_ids), batch_size):
             batch_image_ids = image_ids[i : i + batch_size]
-            yield self._process_batch(batch_image_ids, images, annotations_by_image)
 
-    def _process_batch(self, batch_image_ids, images, annotations_by_image) -> pa.RecordBatch:
-        images_data = []
-        all_bboxes = []
-        all_labels = []
-        heights = []
-        widths = []
-        file_names = []
+            images_data = []
+            all_bboxes = []
+            all_labels = []
+            heights = []
+            widths = []
+            file_names = []
 
-        for image_id in batch_image_ids:
-            image_info = images[image_id]
-            image_path = (
-                os.path.join(self.image_root, image_info["file_name"])
-                if self.image_root
-                else image_info["file_name"]
+            for image_id in batch_image_ids:
+                image_info = images[image_id]
+                image_path = (
+                    os.path.join(self.image_root, image_info["file_name"])
+                    if self.image_root
+                    else image_info["file_name"]
+                )
+                with open(image_path, "rb") as f:
+                    images_data.append(f.read())
+
+                annotations = annotations_by_image.get(image_id, [])
+                bboxes = [ann["bbox"] for ann in annotations]
+                labels = [ann["category_id"] for ann in annotations]
+
+                all_bboxes.append(bboxes)
+                all_labels.append(labels)
+                heights.append(image_info.get("height", 0))
+                widths.append(image_info.get("width", 0))
+                file_names.append(image_info.get("file_name", ""))
+
+            batch = pa.RecordBatch.from_arrays(
+                [
+                    pa.array(images_data, type=pa.binary()),
+                    pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
+                    pa.array(all_labels, type=pa.list_(pa.int64())),
+                    pa.array(heights, type=pa.int64()),
+                    pa.array(widths, type=pa.int64()),
+                    pa.array(file_names, type=pa.string()),
+                ],
+                names=["image", "bbox", "label", "height", "width", "file_name"],
             )
-            with open(image_path, "rb") as f:
-                images_data.append(f.read())
-
-            annotations = annotations_by_image.get(image_id, [])
-            bboxes = [ann["bbox"] for ann in annotations]
-            labels = [ann["category_id"] for ann in annotations]
-
-            all_bboxes.append(bboxes)
-            all_labels.append(labels)
-            heights.append(image_info.get("height", 0))
-            widths.append(image_info.get("width", 0))
-            file_names.append(image_info.get("file_name", ""))
-
-        batch = pa.RecordBatch.from_arrays(
-            [
-                pa.array(images_data, type=pa.binary()),
-                pa.array(all_bboxes, type=pa.list_(pa.list_(pa.float32()))),
-                pa.array(all_labels, type=pa.list_(pa.int64())),
-                pa.array(heights, type=pa.int64()),
-                pa.array(widths, type=pa.int64()),
-                pa.array(file_names, type=pa.string()),
-            ],
-            names=["image", "bbox", "label", "height", "width", "file_name"],
-        )
-        return batch
+            yield batch
