@@ -32,11 +32,11 @@ class YoloDataset(BaseDataset):
     def __init__(self, data: str, options: dict = None):
         super().__init__(data)
         self.options = options or {}
-        self._load_yolo_metadata()
 
-    def _load_yolo_metadata(self):
+    def _load_yolo_metadata(self, max_class_id: int = 0):
         """
         Loads the class names from the data.yaml file.
+        If not found, it will generate a default mapping.
         """
         data_yaml_path = os.path.join(self.data, "data.yaml")
         if os.path.exists(data_yaml_path):
@@ -46,6 +46,12 @@ class YoloDataset(BaseDataset):
                     self.metadata.class_names = {
                         i: name for i, name in enumerate(data_yaml["names"])
                     }
+                    return
+
+        # If no class names are found, generate default ones
+        if not self.metadata.class_names:
+            num_classes = max_class_id + 1
+            self.metadata.class_names = {i: str(i) for i in range(num_classes)}
 
     def to_batches(
         self, batch_size: int = 1024
@@ -70,6 +76,18 @@ class YoloDataset(BaseDataset):
         for file in sorted(os.listdir(label_dir)):
             if file.endswith(".txt"):
                 label_files.append(os.path.join(label_dir, file))
+
+        # First pass to determine the max_class_id
+        max_class_id = 0
+        for label_path in label_files:
+            with open(label_path, "r") as f:
+                for line in f:
+                    parts = line.strip().split()
+                    class_id = int(parts[0])
+                    if class_id > max_class_id:
+                        max_class_id = class_id
+        
+        self._load_yolo_metadata(max_class_id)
 
         for i in range(0, len(image_files), batch_size):
             batch_image_files = image_files[i : i + batch_size]

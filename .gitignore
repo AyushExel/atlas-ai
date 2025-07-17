@@ -9,3 +9,13 @@ __pycache__/
 *.pyc
 **.egg-info
 *.lance/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+.eggs/

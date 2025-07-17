@@ -111,6 +111,10 @@ class BaseDataset(ABC):
         dataset = lance.dataset(uri)
         if b"metadata" in dataset.schema.metadata:
             metadata_dict = json.loads(dataset.schema.metadata[b"metadata"])
+            if "class_names" in metadata_dict and isinstance(metadata_dict["class_names"], dict):
+                metadata_dict["class_names"] = {
+                    int(k): v for k, v in metadata_dict["class_names"].items()
+                }
             return TaskMetadata(**metadata_dict)
         return TaskMetadata()
 

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from typing import Any, Dict, Optional, Union
 
 import lance
@@ -25,7 +26,7 @@ from atlas.tasks.data_model.factory import create_dataset
 
 def sink(
     data: Union[str, BaseDataset],
-    uri: str,
+    uri: Optional[str] = None,
     mode: str = "overwrite",
     options: Optional[Dict[str, Any]] = None,
 ):
@@ -49,6 +50,8 @@ def sink(
         options = {}
 
     if isinstance(data, str):
+        if uri is None:
+            uri = f"{os.path.splitext(data)[0]}.lance"
         dataset = create_dataset(data, options)
     else:
         dataset = data

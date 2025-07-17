@@ -1,11 +1,13 @@
 import os
 import unittest
+import yaml
 
 import lance
 import pandas as pd
 import pyarrow as pa
 
 from atlas.data_sinks import sink
+from atlas.tasks.data_model.base import BaseDataset
 
 
 class YoloSinkTest(unittest.TestCase):
@@ -33,6 +35,26 @@ class YoloSinkTest(unittest.TestCase):
         if os.path.exists(self.lance_path):
             import shutil
             shutil.rmtree(self.lance_path)
+        if os.path.exists("data.yaml"):
+            os.remove("data.yaml")
+
+    def test_sink_yolo_with_data_yaml(self):
+        # Create a data.yaml file
+        with open(os.path.join(self.yolo_dir, "data.yaml"), "w") as f:
+            yaml.dump({"names": ["class0", "class1", "class2"]}, f)
+
+        sink(self.yolo_dir, self.lance_path, options={"task": "object_detection", "format": "yolo"})
+        dataset = lance.dataset(self.lance_path)
+        self.assertEqual(dataset.count_rows(), 3)
+        metadata = BaseDataset.get_metadata(self.lance_path)
+        self.assertEqual(metadata.class_names, {0: "class0", 1: "class1", 2: "class2"})
+
+    def test_sink_yolo_without_data_yaml(self):
+        sink(self.yolo_dir, self.lance_path, options={"task": "object_detection", "format": "yolo"})
+        dataset = lance.dataset(self.lance_path)
+        self.assertEqual(dataset.count_rows(), 3)
+        metadata = BaseDataset.get_metadata(self.lance_path)
+        self.assertEqual(metadata.class_names, {0: "0", 1: "1", 2: "2"})
 
     def test_sink_yolo(self):
         sink(self.yolo_dir, self.lance_path, options={"task": "object_detection", "format": "yolo"})
