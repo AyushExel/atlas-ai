@@ -3,6 +3,7 @@ import os
 import unittest
 
 import lance
+import io
 import numpy as np
 import pandas as pd
 import pyarrow as pa
@@ -67,7 +68,8 @@ class CocoSegmentationSinkTest(unittest.TestCase):
         self.assertEqual(table.column("label").to_pylist()[0], [1])
 
         mask_bytes = table.column("mask").to_pylist()[0][0]
-        mask = np.frombuffer(mask_bytes, dtype=np.uint8).reshape(100, 100)
+        mask_img = Image.open(io.BytesIO(mask_bytes))
+        mask = np.array(mask_img)
         self.assertEqual(mask.shape, (100, 100))
         self.assertTrue(np.any(mask > 0))
 
