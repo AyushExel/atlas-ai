@@ -55,11 +55,15 @@ class TestImageMetadata(unittest.TestCase):
 
     def test_yolo_metadata(self):
         with tempfile.TemporaryDirectory() as tmpdir:
+            image_dir = os.path.join(tmpdir, "images", "train2017")
+            label_dir = os.path.join(tmpdir, "labels", "train2017")
+            os.makedirs(image_dir)
+            os.makedirs(label_dir)
             # create dummy image and label files
             for i in range(2):
                 img = Image.new("RGB", (100, 200), color="red")
-                img.save(os.path.join(tmpdir, f"image{i}.jpg"))
-                with open(os.path.join(tmpdir, f"image{i}.txt"), "w") as f:
+                img.save(os.path.join(image_dir, f"image{i}.jpg"))
+                with open(os.path.join(label_dir, f"image{i}.txt"), "w") as f:
                     f.write(f"{i} 0.5 0.5 0.1 0.1")
 
             dataset = YoloDataset(tmpdir)
