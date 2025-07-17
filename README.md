@@ -36,26 +36,56 @@ The `atlas` CLI provides a simple way to interact with your datasets.
 
 To sink a dataset, simply point the `atlas sink` command to your data source. Atlas will automatically infer the dataset type and create a Lance dataset in the same directory.
 
-```bash
-# Sink a COCO dataset
-atlas sink /path/to/your/coco_dataset/
+<details>
+<summary>Sink Syntax</summary>
 
-# Sink a YOLO dataset
-atlas sink /path/to/your/yolo_dataset/
+#### Object Detection
 
-# Sink a CSV file
-atlas sink /path/to/your/data.csv
+-   **COCO:** Provide the path to the annotation `.json` file.
+    ```bash
+    atlas sink /path/to/your/coco_annotations.json
+    ```
+-   **YOLO:** Provide the path to the dataset directory.
+    ```bash
+    atlas sink /path/to/your/yolo_dataset/
+    ```
+
+#### Segmentation
+
+-   **COCO:** Provide the path to the annotation `.json` file.
+    ```bash
+    atlas sink /path/to/your/coco_annotations.json
+    ```
+
+#### Tabular
+
+-   **CSV:** Provide the path to the `.csv` file.
+    ```bash
+    atlas sink /path/to/your/data.csv
+    ```
+-   **Parquet:** Provide the path to the `.parquet` file.
+    ```bash
+    atlas sink /path/to/your/data.parquet
+    ```
+
+</details>
+
+<details>
+<summary>Manual Sink / Build on Top</summary>
+
+You can also import specific task types and use them directly or even subclass them for more advanced use cases.
+
+```python
+from atlas.tasks.object_detection import COCOObjectDetection
+
+# Initialize the task
+coco_task = COCOObjectDetection(name="my_coco_task")
+
+# Sink the dataset
+coco_task.sink("/path/to/your/coco_annotations.json", "/path/to/your/dataset.lance")
 ```
 
-You can also specify the output URI and other options:
-
-```bash
-# Sink a dataset to a specific location
-atlas sink /path/to/your/data.csv /path/to/your/dataset.lance
-
-# Manually specify the task and format
-atlas sink /path/to/your/data --task object_detection --format coco
-```
+</details>
 
 #### Visualizing a Dataset
 
