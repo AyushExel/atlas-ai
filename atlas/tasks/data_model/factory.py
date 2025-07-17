@@ -17,6 +17,7 @@
 import os
 from typing import Any, Dict, Optional, Tuple
 
+
 from atlas.tasks.data_model.base import BaseDataset
 
 
@@ -77,6 +78,7 @@ def create_dataset(data: str, options: Optional[Dict[str, Any]] = None) -> BaseD
         format = format or inferred_format
         options["task"] = task
         options["format"] = format
+
 
     if task == "object_detection":
         if format == "coco":

@@ -30,6 +30,7 @@ pip install atlas-ai
 
 ### Command-Line Interface
 
+
 The `atlas` CLI provides a simple way to interact with your datasets.
 
 #### Sinking a Dataset

@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["sink"]
+__all__ = ["sink", "visualize", "CocoDataset", "YoloDataset", "CocoSegmentationDataset", "CsvDataset", "ParquetDataset"]
 
 from .data_sinks import sink
 from .visualizers.visualizer import visualize
+from .tasks.object_detection.coco import CocoDataset
+from .tasks.object_detection.yolo import YoloDataset
+from .tasks.segmentation.coco import CocoSegmentationDataset
+from .tasks.tabular.csv import CsvDataset
+from .tasks.tabular.parquet import ParquetDataset
