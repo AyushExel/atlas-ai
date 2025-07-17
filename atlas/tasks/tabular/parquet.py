@@ -16,7 +16,7 @@
 
 from typing import Generator
 
-import lance
+from lance import write_dataset
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -39,7 +39,7 @@ class ParquetDataset(BaseDataset):
         Converts the dataset to Lance format and saves it to the given URI.
         """
         table = pq.read_table(self.data)
-        lance.write_dataset(table, uri, mode=mode, **kwargs)
+        write_dataset(table, uri, mode=mode, **kwargs)
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """

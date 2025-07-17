@@ -14,39 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from typing import Generator
 
-import pandas as pd
 import pyarrow as pa
-from pyarrow import csv
-from lance import write_dataset
 
 from atlas.tasks.data_model.base import BaseDataset
 
 
-class CsvDataset(BaseDataset):
+class JsonlDataset(BaseDataset):
     """
-    A dataset that reads data from a CSV file.
+    A class to represent a JSONL dataset.
     """
-
-    def to_lance(
-        self,
-        uri: str,
-        mode: str = "create",
-        batch_size: int = 1024,
-        **kwargs,
-    ) -> None:
-        """
-        Converts the dataset to Lance format and saves it to the given URI.
-        """
-        df = pd.read_csv(self.data)
-        write_dataset(df, uri, mode=mode, **kwargs)
 
     def to_batches(self, batch_size: int = 1024) -> Generator[pa.RecordBatch, None, None]:
         """
         Yields batches of the dataset as Arrow RecordBatches.
-        """
 
-        reader = pd.read_csv(self.data, chunksize=batch_size)
-        for chunk in reader:
-            yield pa.Table.from_pandas(chunk).to_batches()[0]
+        Args:
+            batch_size (int, optional): The number of rows in each batch.
+                Defaults to 1024.
+
+        Yields:
+            Generator[pa.RecordBatch, None, None]: A generator of Arrow `RecordBatch`
+                objects.
+        """
+        with open(self.data, "r") as f:
+            lines = []
+            for line in f:
+                lines.append(json.loads(line))
+                if len(lines) == batch_size:
+                    yield pa.RecordBatch.from_pylist(lines)
+                    lines = []
+            if lines:
+                yield pa.RecordBatch.from_pylist(lines)

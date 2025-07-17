@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch, call
 
-import lance
+from lance import write_dataset
 import pandas as pd
 from PIL import Image
 
@@ -32,7 +32,7 @@ class VisualizerTest(unittest.TestCase):
         })
         import pyarrow as pa
         table = pa.Table.from_pandas(df)
-        lance.write_dataset(table, self.lance_path, mode="create")
+        write_dataset(table, self.lance_path, mode="create")
 
     def tearDown(self):
         if os.path.exists(self.lance_path):

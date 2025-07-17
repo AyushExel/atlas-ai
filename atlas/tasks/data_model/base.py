@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Generator, List, Optional
 
 import lance
+import lance
 import pyarrow as pa
 
 

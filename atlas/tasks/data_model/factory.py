@@ -54,8 +54,13 @@ def create_dataset(data: str, options: Optional[Dict[str, Any]] = None) -> BaseD
     elif data.endswith(".parquet"):
         from atlas.tasks.tabular.parquet import ParquetDataset
         return ParquetDataset(data)
-    elif data.endswith(".parquet"):
-        from atlas.tasks.tabular.parquet import ParquetDataset
-        return ParquetDataset(data)
+    elif task == "text":
+        if format == "jsonl":
+            from atlas.tasks.text.jsonl import JsonlDataset
+            return JsonlDataset(data)
+    elif task == "rag":
+        if format == "json":
+            from atlas.tasks.rag.json import JsonDataset
+            return JsonDataset(data)
 
     raise ValueError(f"Unsupported data format or task: {data}, {options}")
