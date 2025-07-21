@@ -59,16 +59,39 @@ class HFDataset(BaseDataset):
         define the schema. The former handles expansion of nested features, while the latter handles the
         conversion of individual features to Arrow fields.
         """
-        # Only expand if the feature is a dictionary. Do not expand lists of dicts.
-        if expand_level > 0 and isinstance(feature, dict):
-            fields = []
-            for sub_name, sub_feature in feature.items():
-                new_name = f"{name}_{sub_name}"
-                self._expansion_map[new_name] = (name, sub_name)
-                fields.extend(self._convert_feature_to_arrow_fields(new_name, sub_feature, expand_level - 1))
-            return fields
-        else:
-            return [self._convert_feature_to_arrow_field(name, feature)]
+        # Expand if the feature is a dictionary or a list of dictionaries
+        if expand_level > 0:
+            # Case 1: Feature is a dictionary (struct). This is for expanding nested objects.
+            if isinstance(feature, dict):
+                fields = []
+                for sub_name, sub_feature in feature.items():
+                    new_name = f"{name}_{sub_name}"
+                    self._expansion_map[new_name] = (name, sub_name, False)  # False indicates not a list expansion
+                    fields.extend(
+                        self._convert_feature_to_arrow_fields(
+                            new_name, sub_feature, expand_level - 1
+                        )
+                    )
+                return fields
+            # Case 2: Feature is a Sequence of dictionaries. This is for expanding lists of objects.
+            elif isinstance(feature, Sequence) and isinstance(feature.feature, dict):
+                fields = []
+                for sub_name, sub_feature in feature.feature.items():
+                    new_name = f"{name}_{sub_name}"
+                    # Mark this for list expansion. The third element in the tuple is a boolean indicating
+                    # whether this is a list expansion.
+                    self._expansion_map[new_name] = (name, sub_name, True)
+                    # Create a new field for the expanded column, making it a list of the sub-feature type
+                    arrow_field = self._convert_feature_to_arrow_field(
+                        new_name, sub_feature
+                    )
+                    fields.append(
+                        pa.field(new_name, pa.list_(arrow_field.type), nullable=True)
+                    )
+                return fields
+
+        # Default case: no expansion
+        return [self._convert_feature_to_arrow_field(name, feature)]
 
     def _convert_feature_to_arrow_field(self, name: str, feature) -> pa.Field:
         """
@@ -171,21 +194,51 @@ class HFDataset(BaseDataset):
                 arrays = []
                 for field in schema:
                     if field.name in self._expansion_map:
-                        original_name, sub_name = self._expansion_map[field.name]
+                        original_name, sub_name, is_list_expansion = self._expansion_map[
+                            field.name
+                        ]
                         original_feature = self.data.features[original_name]
-                        
-                        if isinstance(original_feature, dict):
+
+                        if is_list_expansion:
+                            # This block handles the expansion of a list of dictionaries.
+                            # It iterates through each row of the batch, and for each row, it iterates
+                            # through the list of dictionaries, extracting the value of the sub-field.
+                            column_data = []
+                            # This is a list of lists of dicts
+                            list_of_lists = batch[original_name]
+                            for list_of_dicts in list_of_lists:
+                                if list_of_dicts is None:
+                                    column_data.append(None)
+                                    continue
+                                sub_items = [
+                                    d.get(sub_name) for d in list_of_dicts
+                                ]
+                                column_data.append(sub_items)
+                            # Get the sub-feature from the Sequence feature
+                            sub_feature = original_feature.feature[sub_name]
+                            processed_data = self._process_column(
+                                pa.array(column_data, type=field.type), sub_feature
+                            )
+                            arrays.append(processed_data)
+                            continue
+                        elif isinstance(original_feature, dict):
+                            # This block handles the expansion of a single dictionary.
                             sub_feature = original_feature[sub_name]
-                            column_data = [row.get(sub_name) if row else None for row in batch[original_name]]
-                            processed_data = self._process_column(pa.array(column_data), sub_feature)
+                            column_data = [
+                                row.get(sub_name) if row else None
+                                for row in batch[original_name]
+                            ]
+                            processed_data = self._process_column(
+                                pa.array(column_data), sub_feature
+                            )
                             arrays.append(pa.array(processed_data, type=field.type))
                             continue
 
+                    # This logic is for non-expanded columns
                     column_data = pa.array(batch[field.name])
                     feature = self.data.features[field.name]
                     processed_data = self._process_column(column_data, feature)
                     arrays.append(pa.array(processed_data, type=field.type))
-
                 yield pa.RecordBatch.from_arrays(arrays, schema=schema)
         else:
             # Faster, Arrow-native path. This is less robust to missing nested data.
@@ -193,25 +246,53 @@ class HFDataset(BaseDataset):
                 arrays = []
                 for field in schema:
                     if field.name in self._expansion_map:
-                        original_name, sub_name = self._expansion_map[field.name]
+                        (
+                            original_name,
+                            sub_name,
+                            is_list_expansion,
+                        ) = self._expansion_map[field.name]
                         original_feature = self.data.features[original_name]
-                        
-                        if isinstance(original_feature, dict):
+
+                        if is_list_expansion:
+                            # This block handles the expansion of a list of dictionaries using the Arrow-native path.
                             column_data = batch[original_name]
                             if isinstance(column_data, pa.ChunkedArray):
                                 column_data = column_data.combine_chunks()
-                            
+
+                            # Extract the sub-field from the list of structs
+                            list_of_structs = column_data
+                            # This extracts the data for sub_name from each struct in the list
+                            sub_column_data = pa.array([
+                                struct.field(sub_name).to_pylist() if struct.is_valid else None
+                                for struct in list_of_structs
+                            ], type=field.type)
+
+                            sub_feature = original_feature.feature[sub_name]
+                            processed_data = self._process_column(
+                                sub_column_data, sub_feature
+                            )
+                            arrays.append(processed_data)
+                            continue
+                        elif isinstance(original_feature, dict):
+                            # This block handles the expansion of a single dictionary using the Arrow-native path.
+                            column_data = batch[original_name]
+                            if isinstance(column_data, pa.ChunkedArray):
+                                column_data = column_data.combine_chunks()
+
                             sub_column_data = column_data.field(sub_name)
                             sub_feature = original_feature[sub_name]
-                            
-                            processed_data = self._process_column(sub_column_data, sub_feature)
+
+                            processed_data = self._process_column(
+                                sub_column_data, sub_feature
+                            )
                             arrays.append(pa.array(processed_data, type=field.type))
                             continue
 
-                    column_data = batch[field.name]
-                    feature = self.data.features[field.name]
-                    processed_data = self._process_column(column_data, feature)
-                    arrays.append(pa.array(processed_data, type=field.type))
+                    if field.name not in self._expansion_map:
+                        column_data = batch[field.name]
+                        feature = self.data.features[field.name]
+                        processed_data = self._process_column(column_data, feature)
+                        arrays.append(pa.array(processed_data, type=field.type))
 
                 yield pa.RecordBatch.from_arrays(arrays, schema=schema)
 
