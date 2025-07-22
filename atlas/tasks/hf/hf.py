@@ -129,11 +129,17 @@ class HFDataset(BaseDataset):
         if isinstance(feature, Audio):
             serialized = []
             for aud in column_data:
-                if aud and 'path' in aud and aud['path']:
-                    with open(aud['path'], 'rb') as f:
+                if isinstance(aud, dict):
+                    if aud.get('path'):
+                        with open(aud['path'], 'rb') as f:
+                            serialized.append(f.read())
+                    elif aud.get('bytes'):
+                        serialized.append(aud['bytes'])
+                    else:
+                        serialized.append(None)
+                elif hasattr(aud, 'path'): # Handle AudioDecoder object
+                    with open(aud.path, 'rb') as f:
                         serialized.append(f.read())
-                elif aud and 'bytes' in aud:
-                    serialized.append(aud['bytes'])
                 else:
                     serialized.append(None)
             return pa.array(serialized, type=pa.large_binary())
