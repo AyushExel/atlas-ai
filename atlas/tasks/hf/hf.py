@@ -126,6 +126,18 @@ class HFDataset(BaseDataset):
                     serialized.append(None)
             return pa.array(serialized, type=pa.large_binary())
 
+        if isinstance(feature, Audio):
+            serialized = []
+            for aud in column_data:
+                if aud and 'path' in aud and aud['path']:
+                    with open(aud['path'], 'rb') as f:
+                        serialized.append(f.read())
+                elif aud and 'bytes' in aud:
+                    serialized.append(aud['bytes'])
+                else:
+                    serialized.append(None)
+            return pa.array(serialized, type=pa.large_binary())
+
         if isinstance(feature, ClassLabel):
             return pa.array([feature.int2str(val) if val is not None else None for val in column_data], type=pa.string())
 
