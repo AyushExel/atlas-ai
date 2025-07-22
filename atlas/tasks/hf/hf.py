@@ -36,9 +36,14 @@ class HFDataset(BaseDataset):
         super().__init__(data)
         self.expand_level = expand_level
         self._expansion_map = {}
+        # Reset formatting to avoid eager decoding that can cause issues with torchcodec
+        self.data.set_format(type=None)
         self.metadata.decode_meta = self._get_decode_meta()
         if any(isinstance(f, Audio) for f in self.data.features.values()):
-            check_ffmpeg()
+            try:
+                check_ffmpeg()
+            except (ImportError, RuntimeError) as e:
+                print(f"Warning: FFmpeg check failed. Audio processing may be limited. Error: {e}")
 
     def _get_decode_meta(self) -> Dict[str, str]:
         decode_meta = {}
@@ -179,18 +184,25 @@ class HFDataset(BaseDataset):
 
     def to_batches(self, batch_size: int = 1024, **kwargs) -> Generator[pa.RecordBatch, None, None]:
         schema = self.to_arrow_schema()
-
-        for batch in self.data.iter(batch_size=batch_size):
+        for i in range(0, len(self.data), batch_size):
+            batch = self.data[i : i + batch_size]
             arrays = []
             for field in schema:
                 if field.name in self._expansion_map:
-                    original_name, sub_name, expansion_type = self._expansion_map[field.name]
+                    original_name, sub_name, expansion_type = self._expansion_map[
+                        field.name
+                    ]
                     original_feature = self.data.features[original_name]
-                    
+
                     if expansion_type == "dict":
                         sub_feature = original_feature[sub_name]
-                        column_data = [row.get(sub_name) if row else None for row in batch[original_name]]
-                        processed_data = self._process_column(column_data, sub_feature, field.type)
+                        column_data = [
+                            row.get(sub_name) if row else None
+                            for row in batch[original_name]
+                        ]
+                        processed_data = self._process_column(
+                            column_data, sub_feature, field.type
+                        )
                         arrays.append(processed_data)
 
                     elif expansion_type == "list_of_dicts":
@@ -200,15 +212,24 @@ class HFDataset(BaseDataset):
                             if list_of_dicts is None:
                                 sub_lists.append(None)
                             else:
-                                sub_lists.append([d.get(sub_name) if isinstance(d, dict) else None for d in list_of_dicts])
-                        
-                        processed_data = self._process_column(sub_lists, Sequence(feature=sub_feature), field.type)
+                                sub_lists.append(
+                                    [
+                                        d.get(sub_name) if isinstance(d, dict) else None
+                                        for d in list_of_dicts
+                                    ]
+                                )
+
+                        processed_data = self._process_column(
+                            sub_lists, Sequence(feature=sub_feature), field.type
+                        )
                         arrays.append(processed_data)
-                
+
                 else:
                     column_data = batch[field.name]
                     feature = self.data.features[field.name]
-                    processed_data = self._process_column(column_data, feature, field.type)
+                    processed_data = self._process_column(
+                        column_data, feature, field.type
+                    )
                     arrays.append(processed_data)
 
             yield pa.RecordBatch.from_arrays(arrays, schema=schema)
