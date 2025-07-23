@@ -19,8 +19,8 @@ import io
 from typing import Generator, List, Dict, Any
 
 import pyarrow as pa
-from datasets import Dataset
-from datasets.features.features import ClassLabel, Value, Sequence, Image, Audio
+from datasets import Dataset, IterableDataset
+from datasets.features.features import ClassLabel, Value, Sequence, Image, Audio, Features
 from PIL.Image import Image as PILImage
 
 from atlas.tasks.data_model.base import BaseDataset
@@ -36,8 +36,6 @@ class HFDataset(BaseDataset):
         super().__init__(data)
         self.expand_level = expand_level
         self._expansion_map = {}
-        # Reset formatting to avoid eager decoding that can cause issues with torchcodec
-        self.data.set_format(type=None)
         self.metadata.decode_meta = self._get_decode_meta()
         if any(isinstance(f, Audio) for f in self.data.features.values()):
             try:
@@ -184,55 +182,96 @@ class HFDataset(BaseDataset):
 
     def to_batches(self, batch_size: int = 1024, **kwargs) -> Generator[pa.RecordBatch, None, None]:
         schema = self.to_arrow_schema()
-        for i in range(0, len(self.data), batch_size):
-            batch = self.data[i : i + batch_size]
-            arrays = []
-            for field in schema:
-                if field.name in self._expansion_map:
-                    original_name, sub_name, expansion_type = self._expansion_map[
-                        field.name
+        
+        # To prevent the torchcodec error, we must remove the Audio feature type
+        # before any iteration or slicing.
+        original_features = self.data.features
+        new_features = original_features.copy()
+        has_audio = False
+        for col_name, feature in new_features.items():
+            if isinstance(feature, Audio):
+                has_audio = True
+                # Cast to a raw type to prevent the decoder from running.
+                new_features[col_name] = Value('string')
+
+        if has_audio:
+            sanitized_data = self.data.cast(new_features)
+        else:
+            sanitized_data = self.data
+
+        if isinstance(sanitized_data, IterableDataset):
+            # For IterableDataset, we manually create batches as lists of dicts
+            batch_as_list_of_dicts = []
+            for item in sanitized_data:
+                batch_as_list_of_dicts.append(item)
+                if len(batch_as_list_of_dicts) == batch_size:
+                    # Convert the list of dicts to a dict of lists before processing
+                    batch_as_dict_of_lists = {
+                        key: [d.get(key) for d in batch_as_list_of_dicts]
+                        for key in (batch_as_list_of_dicts[0] if batch_as_list_of_dicts else {})
+                    }
+                    yield self._process_batch(batch_as_dict_of_lists, schema, original_features)
+                    batch_as_list_of_dicts = []
+            if batch_as_list_of_dicts:
+                batch_as_dict_of_lists = {
+                    key: [d.get(key) for d in batch_as_list_of_dicts]
+                    for key in (batch_as_list_of_dicts[0] if batch_as_list_of_dicts else {})
+                }
+                yield self._process_batch(batch_as_dict_of_lists, schema, original_features)
+        else:
+            # For regular Dataset, slicing gives us a dict of lists directly
+            for i in range(0, len(sanitized_data), batch_size):
+                batch_as_dict_of_lists = sanitized_data[i : i + batch_size]
+                yield self._process_batch(batch_as_dict_of_lists, schema, original_features)
+
+    def _process_batch(self, batch: Dict[str, list], schema: pa.Schema, features: Features) -> pa.RecordBatch:
+        arrays = []
+        for field in schema:
+            if field.name in self._expansion_map:
+                original_name, sub_name, expansion_type = self._expansion_map[
+                    field.name
+                ]
+                original_feature = features[original_name]
+
+                if expansion_type == "dict":
+                    sub_feature = original_feature[sub_name]
+                    column_data = [
+                        row.get(sub_name) if row else None
+                        for row in batch[original_name]
                     ]
-                    original_feature = self.data.features[original_name]
-
-                    if expansion_type == "dict":
-                        sub_feature = original_feature[sub_name]
-                        column_data = [
-                            row.get(sub_name) if row else None
-                            for row in batch[original_name]
-                        ]
-                        processed_data = self._process_column(
-                            column_data, sub_feature, field.type
-                        )
-                        arrays.append(processed_data)
-
-                    elif expansion_type == "list_of_dicts":
-                        sub_feature = original_feature.feature[sub_name]
-                        sub_lists = []
-                        for list_of_dicts in batch[original_name]:
-                            if list_of_dicts is None:
-                                sub_lists.append(None)
-                            else:
-                                sub_lists.append(
-                                    [
-                                        d.get(sub_name) if isinstance(d, dict) else None
-                                        for d in list_of_dicts
-                                    ]
-                                )
-
-                        processed_data = self._process_column(
-                            sub_lists, Sequence(feature=sub_feature), field.type
-                        )
-                        arrays.append(processed_data)
-
-                else:
-                    column_data = batch[field.name]
-                    feature = self.data.features[field.name]
                     processed_data = self._process_column(
-                        column_data, feature, field.type
+                        column_data, sub_feature, field.type
                     )
                     arrays.append(processed_data)
 
-            yield pa.RecordBatch.from_arrays(arrays, schema=schema)
+                elif expansion_type == "list_of_dicts":
+                    sub_feature = original_feature.feature[sub_name]
+                    sub_lists = []
+                    for list_of_dicts in batch[original_name]:
+                        if list_of_dicts is None:
+                            sub_lists.append(None)
+                        else:
+                            sub_lists.append(
+                                [
+                                    d.get(sub_name) if isinstance(d, dict) else None
+                                    for d in list_of_dicts
+                                ]
+                            )
+
+                    processed_data = self._process_column(
+                        sub_lists, Sequence(feature=sub_feature), field.type
+                    )
+                    arrays.append(processed_data)
+
+            else:
+                column_data = batch[field.name]
+                feature = features[field.name]
+                processed_data = self._process_column(
+                    column_data, feature, field.type
+                )
+                arrays.append(processed_data)
+
+        return pa.RecordBatch.from_arrays(arrays, schema=schema)
 
     @property
     def schema(self) -> pa.Schema:

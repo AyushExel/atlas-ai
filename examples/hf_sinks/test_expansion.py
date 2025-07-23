@@ -134,10 +134,12 @@ def test_failing_list_of_dicts_expansion():
     final_schema = output_dataset.schema
     print(final_schema)
 
-    # Basic check, can be improved after the fix
-    assert 'objects_id' in final_schema.names
+    # Basic check for some of the expected expanded columns
     assert 'objects_bbox' in final_schema.names
-    assert 'objects_category' in final_schema.names
+    assert 'objects_categories' in final_schema.names
+    assert 'annotations_area' in final_schema.names
+    assert 'annotations_bbox' in final_schema.names
+    assert 'annotations_category_id' in final_schema.names
 
     shutil.rmtree(db_path)
     if os.path.exists(output_dir):
@@ -253,12 +255,7 @@ def main():
     test_dict_expansion()
     test_list_of_dicts_expansion()
     test_extensive_expansion()
-    
-    # The failing test is expected to fail, so only run it if you are actively debugging it.
-    try:
-        test_failing_list_of_dicts_expansion()
-    except Exception as e:
-        print(f"Failing test failed as expected: {e}")
+    test_failing_list_of_dicts_expansion()
 
 if __name__ == "__main__":
     main()
