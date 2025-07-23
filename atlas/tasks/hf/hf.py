@@ -192,7 +192,7 @@ class HFDataset(BaseDataset):
             if isinstance(feature, Audio):
                 has_audio = True
                 # Cast to a raw type to prevent the decoder from running.
-                new_features[col_name] = Value('string')
+                new_features[col_name] = Audio(decode=False)
 
         if has_audio:
             sanitized_data = self.data.cast(new_features)
