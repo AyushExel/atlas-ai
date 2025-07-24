@@ -1,528 +1,676 @@
-# Atlas
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas - Beautiful README</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #e2e8f0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            border-radius: 24px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .hero-text {
+            font-size: 20px;
+            color: #cbd5e1;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        /* Section Headers */
+        .section {
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 24px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        /* Core Operations */
+        .operations-grid {
+            display: grid;
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+        
+        .operation-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .operation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+        }
+        
+        .operation-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .operation-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .operation-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .operation-desc {
+            color: #cbd5e1;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+        
+        .flow-diagram {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #94a3b8;
+            overflow-x: auto;
+            border-left: 4px solid #6366f1;
+        }
+        
+        /* Code Blocks */
+        .code-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 32px 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+        }
+        
+        .code-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #e2e8f0;
+            overflow-x: auto;
+            border-left: 4px solid #10b981;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px;
+            right: 16px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Syntax Highlighting */
+        .keyword { color: #c084fc; font-weight: 500; }
+        .string { color: #34d399; }
+        .comment { color: #64748b; font-style: italic; }
+        .function { color: #60a5fa; }
+        .variable { color: #f1f5f9; }
+        
+        /* Data Tables */
+        .data-table {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #cbd5e1;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid rgba(252, 211, 77, 0.3);
+        }
+        
+        /* Installation Section */
+        .install-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .install-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .install-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .install-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bash-code {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #10b981;
+            border-left: 4px solid #10b981;
+        }
+        
+        /* Collapsible Sections */
+        .collapsible {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            margin: 16px 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .collapsible:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .collapsible-header {
+            padding: 20px 24px;
+            background: rgba(99, 102, 241, 0.1);
+            cursor: pointer;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .collapsible-header:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+        
+        .collapsible-content {
+            padding: 24px;
+            border-top: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Visual Enhancements */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+        
+        .feature-icon {
+            color: #10b981;
+            font-size: 20px;
+            margin-top: 2px;
+        }
+        
+        .feature-text {
+            color: #cbd5e1;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+        
+        /* Coming Soon Sections */
+        .coming-soon {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+            border: 2px dashed rgba(251, 191, 36, 0.3);
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .coming-soon-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 12px;
+        }
+        
+        .coming-soon-text {
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .badges {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .install-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">A</div>
+            
+            <div class="badges">
+                <a href="https://pypi.org/project/atlas-ai/" class="badge">📦 PyPI Version</a>
+                <a href="https://github.com/your-repo/atlas/actions" class="badge">🔄 CI Status</a>
+                <a href="https://codecov.io/gh/your-repo/atlas" class="badge">📊 Code Coverage</a>
+            </div>
+            
+            <div class="hero-text">
+                Atlas is a data-centric AI framework for curating, indexing, and analyzing massive datasets for deep learning applications. It provides a suite of tools to streamline the entire data lifecycle, from initial data ingestion to model training and analysis.
+            </div>
+        </div>
 
-<p align="center">
-  <img src="https://storage.googleapis.com/atlas-resources/logo.png" alt="Atlas Logo" width="200"/>
-</p>
+        <!-- Core Operations -->
+        <div class="section">
+            <h2 class="section-title">Core Operations</h2>
+            <p style="color: #cbd5e1; margin-bottom: 32px; font-size: 18px;">
+                The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations:
+            </p>
+            
+            <div class="operations-grid">
+                <div class="operation-card">
+                    <div class="operation-title">
+                        <div class="operation-icon">📥</div>
+                        Sink
+                    </div>
+                    <div class="operation-desc">
+                        Ingest data from any source and format into an optimized Lance dataset.
+                    </div>
+                    <div class="flow-diagram">
++-----------------------+      +----------------------+      +---------------------+
+|   Raw Data Sources    |      |      Atlas Sink      |      |   Lance Dataset     |
+|  (COCO, YOLO, CSV)    |----->|  (Auto-detection,    |----->|  (Optimized Storage)|
+|                       |      |   Metadata Extraction)|      |                     |
++-----------------------+      +----------------------+      +---------------------+
+                    </div>
+                </div>
 
-<p align="center">
-  <a href="https://pypi.org/project/atlas-ai/">
-    <img src="https://img.shields.io/pypi/v/atlas-ai.svg" alt="PyPI Version">
-  </a>
-  <a href="https://github.com/your-repo/atlas/actions">
-    <img src="https://github.com/your-repo/atlas/workflows/CI/badge.svg" alt="CI">
-  </a>
-  <a href="https://codecov.io/gh/your-repo/atlas">
-    <img src="https://codecov.io/gh/your-repo/atlas/branch/main/graph/badge.svg" alt="Codecov">
-  </a>
-</p>
+                <div class="operation-card">
+                    <div class="operation-title">
+                        <div class="operation-icon">🔍</div>
+                        Index
+                    </div>
+                    <div class="operation-desc">
+                        Create powerful, multi-modal indexes (FTS/BM25, Vector embeddings, Hybrid, or custom features) on your data to enable fast and efficient search and retrieval.
+                    </div>
+                    <div class="flow-diagram">
++---------------------+      +----------------------+      +-----------------------------+
+|   Lance Dataset     |      |       Index          |      |   Indexed Dataset           |
+| (Optimized Storage) |----->|  (Vector & Metadata  |----->| (Vector Search, SQL Filters)|
+| (Larger than memory)|      |      Indexing)       |      | (For massive datasets)      |
++---------------------+      +----------------------+      +-----------------------------+
+                    </div>
+                </div>
 
-Atlas is a data-centric AI framework for curating, indexing, and analyzing massive datasets for deep learning applications. It provides a suite of tools to streamline the entire data lifecycle, from initial data ingestion to model training and analysis.
+                <div class="operation-card">
+                    <div class="operation-title">
+                        <div class="operation-icon">📊</div>
+                        Analyse
+                    </div>
+                    <div class="operation-desc">
+                        Analyse your datasets to gain insights, identify patterns, and debug your models (Run EDA and filters of larger-than-memory datasets).
+                    </div>
+                    <div class="flow-diagram">
++-----------------------+      +------------------------+      +----------------------+
+|   Indexed Dataset     |      |     Atlas Analyse      |      |   Insights &         |
+|    (Fast Queries)     |----->| (Embedding Analysis,   |----->|   Visualizations     |
+|                       |      |  Quality Checks, etc.) |      |                      |
++-----------------------+      +------------------------+      +----------------------+
+                    </div>
+                </div>
 
-## Core Operations
+                <div class="operation-card">
+                    <div class="operation-title">
+                        <div class="operation-icon">🚀</div>
+                        Training
+                    </div>
+                    <div class="operation-desc">
+                        Connect with your desired trainer and directly train from your sink source without any transformation required.
+                    </div>
+                    <div class="flow-diagram">
++-----------------------+      +------------------------+      +----------------------+
+|   Indexed Dataset     |      |      Trainer           |      |   Insights &         |
+|    (Fast Queries)     |----->| (PyTorch, TF, etc.)    |----->|   Models             |
+|                       |      |                        |      |                      |
++-----------------------+      +------------------------+      +----------------------+
+                    </div>
+                </div>
+            </div>
 
-The vision for Atlas is to provide a comprehensive solution for managing large-scale datasets in AI development. The framework is built around three core operations:
+            <div class="highlight-box">
+                <h3 style="color: #f1f5f9; margin-bottom: 16px;">📋 End-to-End Example</h3>
+                <p style="color: #cbd5e1; margin-bottom: 20px;">Here is an end-to-end example of how to <strong>sink</strong> a dataset and then <strong>index</strong> it:</p>
+                
+                <div class="code-block">
+<span class="keyword">import</span> <span class="string">atlas</span>
+<span class="keyword">from</span> <span class="string">atlas.index</span> <span class="keyword">import</span> <span class="function">Indexer</span>
+<span class="keyword">from</span> <span class="string">datasets</span> <span class="keyword">import</span> <span class="function">load_dataset</span>
 
--   **Sink:** Ingest data from any source and format into an optimized Lance dataset.
-```
-        +-----------------------+      +----------------------+      +---------------------+
-        |   Raw Data Sources    |      |      Atlas Sink      |      |   Lance Dataset     |
-        |  (COCO, YOLO, CSV)    |----->|  (Auto-detection,    |----->|  (Optimized Storage)|
-        |                       |      |   Metadata Extraction)|      |                     |
-        +-----------------------+      +----------------------+      +---------------------+
-```
+<span class="comment"># --- 1. Sink a dataset from Hugging Face Hub ---</span>
+<span class="comment"># We'll use a dataset with images and text captions.</span>
+<span class="variable">dataset</span> = <span class="function">load_dataset</span>(<span class="string">"lambdalabs/pokemon-blip-captions"</span>, split=<span class="string">"train"</span>)
+<span class="function">atlas.sink</span>(<span class="variable">dataset</span>, <span class="string">"pokemon.lance"</span>)
 
--   **Index:** Create powerful, multi-modal indexes (FTS/BM25, Vector embeddings, Hybrid, or custom features) on your data to enable fast and efficient search and retrieval.
-```
-        +---------------------+      +----------------------+      +-----------------------------+
-        |   Lance Dataset     |      |       Index          |      |   Indexed Dataset           |
-        | (Optimized Storage) |----->|  (Vector & Metadata  |----->| (Vector Search, SQL Filters)|
-        | (Larger than memory)|      |      Indexing)       |      | (For massive datasets)      |
-        +---------------------+      +----------------------+      +-----------------------------+
-```
+<span class="comment"># --- 2. Initialize the Indexer ---</span>
+<span class="variable">idx</span> = <span class="function">Indexer</span>(<span class="string">"pokemon.lance"</span>)
 
--   **Analyse:** Analyse your datasets to gain insights, identify patterns, and debug your models (Run EDA and filters of larger-than-memory datasets).
-```
-        +-----------------------+      +------------------------+      +----------------------+
-        |   Indexed Dataset     |      |     Atlas Analyse      |      |   Insights &         |
-        |    (Fast Queries)     |----->| (Embedding Analysis,   |----->|   Visualizations     |
-        |                       |      |  Quality Checks, etc.) |      |                      |
-        +-----------------------+      +------------------------+      +----------------------+
-```
-**Training** Connect with your desired trainer and directly train from your sink source without any transformation required.
-```
-        +-----------------------+      +------------------------+      +----------------------+
-        |   Indexed Dataset     |      |      Trainer           |      |   Insights &         |
-        |    (Fast Queries)     |----->| (PyTorch, TF, etc.)    |----->|   Models             |
-        |                       |      |                        |      |                      |
-        +-----------------------+      +------------------------+      +----------------------+
-```
+<span class="comment"># --- 3. Create Indexes ---</span>
+<span class="variable">idx</span>.<span class="function">create_index</span>(column=<span class="string">"image"</span>, index_type=<span class="string">"vector"</span>)
+<span class="variable">idx</span>.<span class="function">create_index</span>(column=<span class="string">"text"</span>, index_type=<span class="string">"fts"</span>)
 
-Here is an end-to-end example of how to `sink` a dataset and then `index` it.
-```python
-import atlas
-from atlas.index import Indexer
-from datasets import load_dataset
+<span class="comment"># --- 4. List and verify indexes ---</span>
+<span class="variable">idx</span>.<span class="function">list_indexes</span>()
+                </div>
 
-# --- 1. Sink a dataset from Hugging Face Hub ---
-# We'll use a dataset with images and text captions.
-dataset = load_dataset("lambdalabs/pokemon-blip-captions", split="train")
-atlas.sink(dataset, "pokemon.lance")
+                <div class="data-table">
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Column Name ┃ Data Type                         ┃ Index Type ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━⇇━━━━━━━━━━━━┩
+│ image       │ binary                            │ None       │
+│ text        │ string                            │ text_idx   │
+│ vector      │ fixed_size_list<item: float>[768] │ vector_idx │
+└─────────────┴───────────────────────────────────┴────────────┘
+                </div>
+            </div>
+        </div>
 
-# The sink operation creates a Lance dataset with the following structure:
-# +------------------------------------+-----------------------------------------+
-# | image                              | text                                    |
-# +====================================+=========================================+
-# | <PIL.PngImagePlugin.PngImageFile>  | a drawing of a pink pokemon with a...   |
-# +------------------------------------+-----------------------------------------+
-# | <PIL.PngImagePlugin.PngImageFile>  | a green and yellow pokemon with a...    |
-# +------------------------------------+-----------------------------------------+
+        <!-- Sink Section -->
+        <div class="section">
+            <h2 class="section-title">Sink</h2>
+            <p style="color: #cbd5e1; margin-bottom: 32px; font-size: 18px;">
+                The <strong>Sink</strong> operation allows you to ingest data from any source and format into an optimized Lance dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
+            </p>
 
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">🤖</div>
+                    <div>
+                        <div class="feature-title">Automatic Data Ingestion</div>
+                        <div class="feature-text">The sink command automatically detects the dataset type (e.g., COCO, YOLO, CSV) and infers the optimal way to ingest the data into Lance.</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏷️</div>
+                    <div>
+                        <div class="feature-title">Rich Metadata Extraction</div>
+                        <div class="feature-text">Atlas extracts a wide range of metadata from your datasets, including image dimensions, class names, captions, and keypoints.</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📦</div>
+                    <div>
+                        <div class="feature-title">Self-Contained Datasets</div>
+                        <div class="feature-text">All data, including images and other binary assets, is stored directly in the Lance dataset, making it easy to share and version your data.</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔧</div>
+                    <div>
+                        <div class="feature-title">Extensible Architecture</div>
+                        <div class="feature-text">The framework is designed to be easily extensible, allowing you to add support for new data formats, tasks, and indexing strategies.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-# --- 2. Initialize the Indexer ---
-# The Indexer attaches to the dataset you just sinked.
-idx = Indexer("pokemon.lance")
+        <!-- Installation -->
+        <div class="section">
+            <h2 class="section-title">Installation</h2>
+            <p style="color: #cbd5e1; margin-bottom: 24px;">To use Atlas, you need to have FFmpeg installed on your system.</p>
+            
+            <div class="install-grid">
+                <div class="install-card">
+                    <div class="install-title">🍎 macOS</div>
+                    <div class="bash-code">brew install ffmpeg</div>
+                </div>
+                <div class="install-card">
+                    <div class="install-title">🐧 Linux</div>
+                    <div class="bash-code">sudo apt-get install ffmpeg</div>
+                </div>
+            </div>
 
-# --- 3. Create Indexes ---
-# Create a vector index on the 'image' column.
-# Atlas will automatically use a default model to generate embeddings.
-idx.create_index(column="image", index_type="vector")
+            <div class="highlight-box">
+                <p style="color: #cbd5e1; margin-bottom: 16px;">If you have installed ffmpeg and are still seeing errors, you may need to set the <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">DYLD_LIBRARY_PATH</code> environment variable:</p>
+                <div class="bash-code">export DYLD_LIBRARY_PATH=$(brew --prefix)/lib:$DYLD_LIBRARY_PATH</div>
+            </div>
 
-# Create a Full-Text Search (FTS) index on the 'text' column.
-idx.create_index(column="text", index_type="fts")
+            <div class="install-grid">
+                <div class="install-card">
+                    <div class="install-title">📦 Install Atlas</div>
+                    <div class="bash-code">pip install atlas-ai</div>
+                </div>
+                <div class="install-card">
+                    <div class="install-title">🎵 With Audio Support</div>
+                    <div class="bash-code">pip install atlas-ai[audio]</div>
+                </div>
+            </div>
+        </div>
 
-# --- 4. List and verify indexes ---
-# The 'vector' column is added for embeddings, and indexes are created.
-idx.list_indexes()
-# ┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-# ┃ Column Name ┃ Data Type                         ┃ Index Type ┃
-# ┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━⇇━━━━━━━━━━━━┩
-# │ image       │ binary                            │ None       │
-# │ text        │ string                            │ text_idx   │
-# │ vector      │ fixed_size_list<item: float>[768] │ vector_idx │
-# └─────────────┴───────────────────────────────────┴────────────┘
-```
----
+        <!-- Usage Section -->
+        <div class="section">
+            <h2 class="section-title">Usage</h2>
+            
+            <div class="code-section">
+                <h3 style="color: #f1f5f9; margin-bottom: 16px;">🐍 Python API (Recommended)</h3>
+                <p style="color: #cbd5e1; margin-bottom: 20px;">The atlas Python API provides a flexible and powerful way to sink your datasets.</p>
+                
+                <div class="highlight-box">
+                    <h4 style="color: #f1f5f9; margin-bottom: 12px;">🤗 Sinking from Hugging Face Datasets</h4>
+                    <p style="color: #cbd5e1; margin-bottom: 16px;">This is the recommended way to use Atlas. You can sink a dataset directly from the Hugging Face Hub.</p>
+                    
+                    <div class="code-block">
+<span class="keyword">from</span> <span class="string">datasets</span> <span class="keyword">import</span> <span class="function">load_dataset</span>
+<span class="keyword">import</span> <span class="string">atlas</span>
 
-# Sink
+<span class="comment"># Load dataset from Hugging Face</span>
+<span class="variable">dataset</span> = <span class="function">load_dataset</span>(<span class="string">"lambdalabs/pokemon-blip-captions"</span>, split=<span class="string">"train"</span>)
 
-The **Sink** operation allows you to ingest data from any source and format into an optimized [Lance](https://lancedb.github.io/lance/) dataset. Atlas automatically infers the dataset type, extracts rich metadata, and stores the data in a self-contained, portable format.
+<span class="comment"># Sink the dataset to Lance format</span>
+<span class="function">atlas.sink</span>(<span class="variable">dataset</span>, <span class="string">"pokemon.lance"</span>)
+                    </div>
+                </div>
 
-## Features
+                <div class="data-table">
+<strong>Sample Data:</strong>
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+
+| image                              | file_name        |   width |   height | label                                                      |
++====================================+==================+=========+==========+============================================================+
+| b'\xff\xd8\xff\xe0\x00\x10JFIF'... | 000000397133.jpg |     640 |      427 | [44 67  1 49 51 51 79  1 47 47 51 51 56 50 56 56 79 57 81] |
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+
+                </div>
+            </div>
 
--   **Automatic Data Ingestion:** The `sink` command automatically detects the dataset type (e.g., COCO, YOLO, CSV) and infers the optimal way to ingest the data into Lance.
--   **Rich Metadata Extraction:** Atlas extracts a wide range of metadata from your datasets, including image dimensions, class names, captions, and keypoints.
--   **Self-Contained Datasets:** All data, including images and other binary assets, is stored directly in the Lance dataset, making it easy to share and version your data.
--   **Extensible Architecture:** The framework is designed to be easily extensible, allowing you to add support for new data formats, tasks, and indexing strategies.
--   **Command-Line and Python API:** Atlas provides both a simple and intuitive command-line interface and a powerful Python API for programmatic access.
+            <!-- Collapsible sections -->
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    🔄 Automatically expand nested schemas
+                </div>
+                <div class="collapsible-content">
+                    <p style="color: #cbd5e1; margin-bottom: 16px;">For nested Hugging Face datasets, you can use the <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">expand_level</code> argument to flatten the structure.</p>
+                    
+                    <div class="code-block">
+<span class="keyword">from</span> <span class="string">datasets</span> <span class="keyword">import</span> <span class="function">Dataset</span>, <span class="function">Features</span>, <span class="function">Value</span>
+<span class="keyword">import</span> <span class="string">atlas</span>
 
-## Installation
-
-To use Atlas, you need to have FFmpeg installed on your system.
-
-**macOS**
-```bash
-brew install ffmpeg
-```
-
-**Linux**
-```bash
-sudo apt-get install ffmpeg
-```
-
-If you have installed ffmpeg and are still seeing errors, you may need to set the `DYLD_LIBRARY_PATH` environment variable. For example, if you installed ffmpeg with homebrew, you can run:
-```bash
-export DYLD_LIBRARY_PATH=$(brew --prefix)/lib:$DYLD_LIBRARY_PATH
-```
-
-Then, install Atlas using pip:
-```bash
-pip install atlas-ai
-```
-
-For audio datasets, you will need to install the `soundfile` dependency. You can do this by running:
-```bash
-pip install atlas-ai[audio]
-```
-
-
-## Usage
-
-### Python API (Recommended)
-
-The `atlas` Python API provides a flexible and powerful way to sink your datasets.
-
-**Sinking from Hugging Face Datasets**
-
-This is the recommended way to use Atlas. You can sink a dataset directly from the Hugging Face Hub. Atlas will preserve the original schema and automatically handle multimodal data like images and audio.
-
-Here's an example using the `lambdalabs/pokemon-blip-captions` dataset:
-
-```python
-from datasets import load_dataset
-import atlas
-
-# Load dataset from Hugging Face
-dataset = load_dataset("lambdalabs/pokemon-blip-captions", split="train")
-
-# Sink the dataset to Lance format
-atlas.sink(dataset, "pokemon.lance")
-```
-
-<p align="center">
-  <img src="examples/data/coco_visualization.png" alt="COCO Visualization" width="500"/>
-</p>
-
-<details open>
-<summary>Click to see sample data</summary>
-
-**Sample Data:**
-```
-+------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
-| image                              | file_name        |   width |   height | label                                                      | bbox                                                     |
-+====================================+==================+=========+==========+============================================================+==========================================================+
-| b'\xff\xd8\xff\xe0\x00\x10JFIF'... | 000000397133.jpg |     640 |      427 | [44 67  1 49 51 51 79  1 47 47 51 51 56 50 56 56 79 57 81] | [array([217.62, 240.54,  38.99,  57.75], dtype=float32)  |
-+------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
-```
-</details>
-
-<details>
-<summary>Automatically expand nested schemas</summary>
-
-For nested Hugging Face datasets, you can use the `expand_level` argument to flatten the structure. For example, `expand_level=1` will expand the first level of nested columns.
-
-If your nested data contains missing keys or `None` values, the default expansion may produce incorrect results. To handle these cases gracefully, set `handle_nested_nulls=True`. This uses a more robust (but slightly slower) method to ensure nulls are preserved correctly.
-
-**Example:**
-
-Given a dataset with a nested column `nested`:
-```python
-from datasets import Dataset, Features, Value
-import atlas
-
-data = [
-    {"nested": {"a": 1, "b": "one"}},
-    {"nested": {"a": 2, "b": "two", "c": True}},
-    {"nested": {"a": 3}},
+<span class="variable">data</span> = [
+    {<span class="string">"nested"</span>: {<span class="string">"a"</span>: 1, <span class="string">"b"</span>: <span class="string">"one"</span>}},
+    {<span class="string">"nested"</span>: {<span class="string">"a"</span>: 2, <span class="string">"b"</span>: <span class="string">"two"</span>, <span class="string">"c"</span>: <span class="keyword">True</span>}},
+    {<span class="string">"nested"</span>: {<span class="string">"a"</span>: 3}},
     {},
 ]
-features = Features({
-    "nested": {
-        "a": Value("int64"),
-        "b": Value("string"),
-        "c": Value("bool"),
-    }
-})
-dataset = Dataset.from_list(data, features=features)
 
-# Sink with expansion
-atlas.sink(dataset, "expanded.lance", task="hf", expand_level=1, handle_nested_nulls=True)
-```
-
-**Original Data Table:**
-```
-+------------------------------------------+
-| nested                                   |
-+==========================================+
-| {'a': 1, 'b': 'one', 'c': None}           |
-+------------------------------------------+
-| {'a': 2, 'b': 'two', 'c': True}           |
-+------------------------------------------+
-| {'a': 3, 'b': None, 'c': None}            |
-+------------------------------------------+
-| None                                     |
-+------------------------------------------+
-```
-
-**Expanded Data Table (`expand_level=1`):**
-```
-+----------+----------+----------+
-| nested_a | nested_b | nested_c |
-+==========+==========+==========+
-| 1        | 'one'    | None     |
-+----------+----------+----------+
-| 2        | 'two'    | True     |
-+----------+----------+----------+
-| 3        | None     | None     |
-+----------+----------+----------+
-| None     | None     | None     |
-+----------+----------+----------+
-```
-</details>
-
-<details>
-<summary>Task-based or File-format based sinks are also supported</summary>
-
-**Object Detection (COCO format)**
-```python
-import atlas
-atlas.sink("examples/data/coco/annotations/instances_val2017_small.json")
-```
-
-**Object Detection (YOLO)**
-
-```python
-import atlas
-atlas.sink("examples/data/yolo/coco128")
-```
-
-**Segmentation (COCO)**
-
-```python
-import atlas
-atlas.sink("examples/data/coco/annotations/instances_val2017_small.json", task="segmentation")
-```
-**sink accepts optional `task` arg to determine the format of dataset. It's inferred if no provided**
-
-**Tabular (CSV file format)**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy.csv")
-```
-
-**Text file format**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy.txt")
-```
-**Parquet file format**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy.parquet")
-```
-
-LLM based task types are also supported
-
-**Instruction**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy.jsonl")
-```
-
-**Ranking**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy_ranking.jsonl")
-```
-
-**Vision-Language**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy_vl.jsonl")
-```
-
-**Chain of Thought**
-
-```python
-import atlas
-atlas.sink("examples/data/dummy_cot.jsonl")
-```
-
-**Paired Text**
-
-```python
-import atlas
-atlas.sink("examples/data/stsb_train.jsonl")
-```
-</details>
-
-<details>
-<summary>Extend the Sink API</summary>
-
-You can also import specific task types and use them directly or even subclass them for more advanced use cases. For example, let's create a custom sink that adds an `image_url` to the COCO dataset.
-
-```python
-from atlas.tasks.object_detection.coco import CocoDataset
-import pyarrow as pa
-import atlas
-
-class CocoDatasetWithImageURL(CocoDataset):
-    def __init__(self, data: str, **kwargs):
-        super().__init__(data, **kwargs)
-        self.base_url = "http://images.cocodataset.org/val2017/"
-
-    def to_batches(self, batch_size: int = 1024):
-        for batch in super().to_batches(batch_size):
-            file_names = batch.column("file_name").to_pylist()
-            image_urls = [self.base_url + file_name for file_name in file_names]
-            yield batch.add_column(0, pa.field("image_url", pa.string()), pa.array(image_urls, type=pa.string()))
-
-# Usage
-custom_coco_dataset = CocoDatasetWithImageURL(
-    "examples/data/coco/annotations/instances_val2017_small.json",
-    image_root="examples/data/coco/images"
-)
-atlas.sink(custom_coco_dataset, "coco_with_url.lance")
-```
-
-</details>
-
-### CLI
-
-The `atlas` CLI provides a simple way to interact with your datasets.
-
-<details>
-<summary>CLI Usage</summary>
-
-<details>
-<summary>Object Detection (COCO)</summary>
-
-```bash
-atlas sink examples/data/coco/annotations/instances_val2017_small.json
-```
-
-</details>
-
-<details>
-<summary>Object Detection (YOLO)</summary>
-
-```bash
-atlas sink examples/data/yolo/coco128
-```
-<p align="center">
-  <img src="examples/data/yolo_visualization.png" alt="YOLO Visualization" width="500"/>
-</p>
-
-</details>
-
-<details>
-<summary>Segmentation (COCO)</summary>
-
-```bash
-atlas sink examples/data/coco/annotations/instances_val2017_small.json --task segmentation
-```
-<p align="center">
-  <img src="examples/data/coco_segmentation_visualization.png" alt="COCO Segmentation Visualization" width="500"/>
-</p>
-
-</details>
-
-<details>
-<summary>Tabular (CSV)</summary>
-
-```bash
-atlas sink examples/data/dummy.csv
-```
-
-</details>
-
-<details>
-<summary>Text</summary>
-
-```bash
-atlas sink examples/data/dummy.txt
-```
-
-</details>
-
-<details>
-<summary>Instruction</summary>
-
-```bash
-atlas sink examples/data/dummy.jsonl
-```
-
-</details>
-
-<details>
-<summary>Embedding</summary>
-
-```bash
-atlas sink examples/data/dummy.parquet
-```
-
-</details>
-
-<details>
-<summary>Ranking</summary>
-
-```bash
-atlas sink examples/data/dummy_ranking.jsonl
-```
-
-</details>
-
-<details>
-<summary>Vision-Language</summary>
-
-```bash
-atlas sink examples/data/dummy_vl.jsonl
-```
-
-</details>
-
-<details>
-<summary>Chain of Thought</summary>
-
-```bash
-atlas sink examples/data/dummy_cot.jsonl
-```
-
-</details>
-
-<details>
-<summary>Paired Text</summary>
-
-```bash
-atlas sink examples/data/stsb_train.jsonl
-```
-
-</details>
-</details>
-
----
-# Index
-
-The **Index** operation allows you to create powerful, multi-modal indexes on your sinked dataset. This enables fast and efficient search and retrieval, which is crucial for working with large-scale AI datasets.
-
-## Features
-
--   **Multi-Modal Indexing:** Create vector embeddings for text, images, and other modalities, or generate traditional FTS (Full-Text Search) indexes.
--   **Automatic Vectorization:** If you create a vector index on a column with raw data (like text or images), Atlas will automatically generate embeddings using a default model.
--   **Flexible and Extensible:** The indexing framework is designed to be extensible, allowing you to integrate your own vectorization models or indexing strategies.
-
-## Usage
-
-The `Indexer` class provides a simple interface for creating and managing indexes on a Lance dataset.
-
-### Creating an Index
-
-To create an index, you first need to have a Lance dataset. You can create one using the `atlas.sink()` function. Then, you can initialize an `Indexer` with the path to your dataset and use the `create_index()` method.
-
-```python
-from atlas.index import Indexer
-
-# Initialize the Indexer with the path to your Lance dataset
-idx = Indexer("path/to/sink/operation/output.lance")
-
-# Create a vector index on the 'image' column
-# This will automatically generate embeddings for the images
-idx.create_index(column="image", index_type="vector")
-
-# Create an FTS index on a 'text' column
-idx.create_index(column="text", index_type="fts")
-```
-
-### Listing Indexes
-
-You can list the existing indexes on a table to see which columns are indexed and what type of index is being used.
-
-```python
-idx.list_indexes()
-```
-
-This will print a table with the column names, data types, and index types, similar to the example in the "Core Operations" section.
-
----
-# Analyse
-
-**Coming Soon...**
----
-# Training
-
-**Coming Soon...**
+<span class="comment"># Sink with expansion</span>
+<span class="function">atlas.sink</span>(<span class="variable">dataset</span>, <span class="string">"expanded.lance"</span>, task=<span class="string">"hf"</span>, expand_level=1, handle_nested_nulls=<span class="keyword">True</span>)
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header">
+                    📁 Task-based or File-format based sinks
+                </div>
+                <div class="collapsible-content">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="install-card">
+                            <div class="install-title">🎯 Object Detection (COCO)</div>
+                            <div class="code-block" style="font-size: 12px;">atlas.sink("examples/data/coco/annotations/instances_val2017_small.json")</div>
