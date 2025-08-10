@@ -1,0 +1,21 @@
+.heroBanner {
+  padding: 2rem 0;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  background-color: #1f232c ;
+  color: #fffefe; /* Use white text for better contrast */
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 6rem;
+  }
+}
+
+.pageWrapper {
+  background-color: #1f232c ;
+  color: #fffefe; /* Use white text for better contrast */
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}

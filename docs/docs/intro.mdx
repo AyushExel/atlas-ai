@@ -1,0 +1,72 @@
+---
+id : Overview
+title : "Overview"
+sidebar_label: "1. Introduction"
+sidebar_position : 1
+---
+
+:::note 
+This is page is under development 
+:::
+
+## What is Atlas ?
+
+Atlas is a data-centric AI framework built to simplify and optimize the handling of large-scale datasets used in deep learning workflows. It supports everything from raw data ingestion to model training, indexing, and dataset analysis offering a unified pipeline for managing your AI data. 
+
+### Key Functionalities
+
+Atlas revolves around four main capabilities:
+
+### [Sink](./operations/sink.mdx) 
+
+This is the ingestion step. Atlas can take raw datasets from various formats like COCO, YOLO, CSV, or JSON and convert them into Lance, an efficient, optimized format. During this process, metadata is automatically extracted, and the dataset is stored in a structured and self-contained way.
+
+```
+        +-----------------------+      +----------------------+      +---------------------+
+        |   Raw Data Sources    |      |      Atlas Sink      |      |   Lance Dataset     |
+        |  (COCO, YOLO, CSV)    |----->|  (Auto-detection,    |----->|  (Optimized Storage)|
+        |                       |      |   Metadata Extraction)|      |                     |
+        +-----------------------+      +----------------------+      +---------------------+
+```
+
+
+### [Index](./operations/indexing.mdx)
+
+Once the data is stored in lance format, Atlas allows you to create various types of indexes: vector indexes (for image or text embeddings), full-text search (FTS), hybrid indexes, or even your own custom-designed ones. These indexes allow for fast retrieval and search over large datasets.
+
+
+```
+        +---------------------+      +----------------------+      +-----------------------------+
+        |   Lance Dataset     |      |       Index          |      |   Indexed Dataset           |
+        | (Optimized Storage) |----->|  (Vector & Metadata  |----->| (Vector Search, SQL Filters)|
+        | (Larger than memory)|      |      Indexing)       |      | (For massive datasets)      |
+        +---------------------+      +----------------------+      +-----------------------------+
+```
+
+
+### [Analyse](./operations/analyse.mdx)
+
+Atlas provides tools for data exploration and diagnostics. You can run embedding visualizations, quality checks, and exploratory data analysis (EDA), even on datasets that are larger than your system memory.
+
+
+```
+        +-----------------------+      +------------------------+      +----------------------+
+        |   Indexed Dataset     |      |     Atlas Analyse      |      |   Insights &         |
+        |    (Fast Queries)     |----->| (Embedding Analysis,   |----->|   Visualizations     |
+        |                       |      |  Quality Checks, etc.) |      |                      |
+        +-----------------------+      +------------------------+      +----------------------+
+```
+
+
+### [Train](./operations/train.mdx) 
+
+You can plug in your favorite deep learning frameworks (like PyTorch or TensorFlow) and begin training directly from the dataset you sinked ( stored in lance),  without requiring manual transformation or additional preprocessing steps.
+
+
+```
+        +-----------------------+      +------------------------+      +----------------------+
+        |   Indexed Dataset     |      |      Trainer           |      |   Insights &         |
+        |    (Fast Queries)     |----->| (PyTorch, TF, etc.)    |----->|   Models             |
+        |                       |      |                        |      |                      |
+        +-----------------------+      +------------------------+      +----------------------+
+```

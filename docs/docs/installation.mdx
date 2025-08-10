@@ -1,0 +1,102 @@
+---
+id : Setup Guide
+title : "Setup Guide"
+sidebar_label: "2. Setup guide"
+sidebar_position : 2
+---
+
+:::note 
+This is page is under development 
+:::
+
+### **Installation Guide: Atlas**
+
+Atlas is a data-centric AI framework that requires a few system dependencies and Python packages to function properly. This guide walks you through the setup process step by step.
+
+---
+
+### 1. Prerequisites
+
+Atlas relies on **FFmpeg** for media decoding and encoding. Make sure it's installed before proceeding.
+
+#### macOS
+
+```bash
+brew install ffmpeg
+```
+
+#### Ubuntu / Debian
+
+```bash
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
+
+#### Windows
+
+You can install FFmpeg via [ffmpeg.org](https://ffmpeg.org/download.html) or use [Chocolatey](https://chocolatey.org/) if installed:
+
+```bash
+choco install ffmpeg
+```
+
+> **Note (macOS only):** If FFmpeg was installed with Homebrew and Atlas still fails to find it, set the `DYLD_LIBRARY_PATH` environment variable:
+>
+> ```bash
+> export DYLD_LIBRARY_PATH=$(brew --prefix)/lib:$DYLD_LIBRARY_PATH
+> ```
+
+---
+
+### 2. Python Installation
+
+Ensure you are using Python **3.8 or newer**. It's recommended to use a virtual environment:
+
+```bash
+python -m venv atlas-env
+source atlas-env/bin/activate  # On Windows: atlas-env\Scripts\activate
+```
+
+---
+
+### 3. Install Atlas (Base Version)
+
+Install Atlas from PyPI:
+
+```bash
+pip install atlas-ai
+```
+
+---
+
+### 4. Optional: Audio Dataset Support
+
+If you intend to work with audio datasets (e.g., speech, sound classification), you need additional dependencies:
+
+```bash
+pip install atlas-ai[audio]
+```
+
+This installs `soundfile`, required for reading and processing audio formats.
+
+---
+
+### 5. Verify Installation
+
+Run the following command to confirm Atlas is installed:
+
+```bash
+python -c "import atlas; print('Atlas version:', atlas.__version__)"
+```
+
+---
+
+### 6. (Optional) Install Development Tools
+
+If you're contributing to Atlas or running it from source, clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/your-repo/atlas.git
+cd atlas
+pip install -e ".[dev]"
+```

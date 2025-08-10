@@ -1,0 +1,217 @@
+---
+id : Sink
+title : "Sink"
+sidebar_label: "Sink"
+sidebar_position : 1
+---
+:::note 
+This is page is under development 
+:::
+
+# Sink
+
+The **Sink** operation in Atlas ingests data from multiple sources and formats into an optimized [Lance](https://lancedb.github.io/lance/) dataset. It automatically detects dataset type, extracts metadata, and stores all data in a self-contained format.
+
+## Key Features
+
+* **Automatic Data Ingestion:** Supports datasets in COCO, YOLO, CSV, Parquet, JSONL, and more.
+* **Rich Metadata Extraction:** Extracts image dimensions, labels, captions, bounding boxes, and other metadata automatically.
+* **Self-Contained Datasets:** All binary files (images/audio) are stored directly in the Lance dataset.
+* **Extensible Architecture:** Easily add support for new formats or create custom sinks.
+* **Python API and CLI Support:** Programmatically ingest datasets or use the CLI for simple workflows.
+
+## 2. Python API Usage
+
+Atlas provides a Python API for sinking datasets to Lance format.
+
+### **Sink from Hugging Face Dataset**
+
+```python
+from datasets import load_dataset
+import atlas
+
+# Load dataset
+dataset = load_dataset("lambdalabs/pokemon-blip-captions", split="train")
+
+# Sink to Lance
+atlas.sink(dataset, "pokemon.lance")
+```
+
+Sample data after sinking:
+
+```
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
+| image                              | file_name        |   width |   height | label                                                      | bbox                                                     |
++====================================+==================+=========+==========+============================================================+==========================================================+
+| b'\xff\xd8\xff\xe0\x00\x10JFIF'... | 000000397133.jpg |     640 |      427 | [44 67  1 49 51 ... ]                                     | [array([217.62, 240.54,  38.99,  57.75], dtype=float32)] |
++------------------------------------+------------------+---------+----------+------------------------------------------------------------+----------------------------------------------------------+
+```
+
+---
+
+### **Expanding Nested Schemas**
+
+Use `expand_level` to flatten nested Hugging Face datasets and `handle_nested_nulls` to manage `None` values:
+
+```python
+from datasets import Dataset, Features, Value
+import atlas
+
+data = [
+    {"nested": {"a": 1, "b": "one"}},
+    {"nested": {"a": 2, "b": "two", "c": True}},
+    {"nested": {"a": 3}},
+    {},
+]
+features = Features({
+    "nested": {
+        "a": Value("int64"),
+        "b": Value("string"),
+        "c": Value("bool"),
+    }
+})
+dataset = Dataset.from_list(data, features=features)
+
+atlas.sink(dataset, "expanded.lance", task="hf", expand_level=1, handle_nested_nulls=True)
+```
+
+Expanded table:
+
+```
++----------+----------+----------+
+| nested_a | nested_b | nested_c |
++==========+==========+==========+
+| 1        | 'one'    | None     |
+| 2        | 'two'    | True     |
+| 3        | None     | None     |
+| None     | None     | None     |
++----------+----------+----------+
+```
+
+---
+
+### **Task-Based and File-Format-Based Sinks**
+
+**COCO Object Detection**
+
+```python
+import atlas
+atlas.sink("examples/data/coco/annotations/instances_val2017_small.json")
+```
+
+**YOLO Object Detection**
+
+```python
+import atlas
+atlas.sink("examples/data/yolo/coco128")
+```
+
+**COCO Segmentation**
+
+```python
+import atlas
+atlas.sink("examples/data/coco/annotations/instances_val2017_small.json", task="segmentation")
+```
+
+**CSV / Tabular**
+
+```python
+import atlas
+atlas.sink("examples/data/dummy.csv")
+```
+
+**Text File**
+
+```python
+import atlas
+atlas.sink("examples/data/dummy.txt")
+```
+
+**Parquet File**
+
+```python
+import atlas
+atlas.sink("examples/data/dummy.parquet")
+```
+
+**LLM and NLP Formats**
+
+```python
+atlas.sink("examples/data/dummy.jsonl")          # Instruction
+atlas.sink("examples/data/dummy_ranking.jsonl")  # Ranking
+atlas.sink("examples/data/dummy_vl.jsonl")       # Vision-Language
+atlas.sink("examples/data/dummy_cot.jsonl")      # Chain-of-Thought
+atlas.sink("examples/data/stsb_train.jsonl")     # Paired Text
+```
+
+---
+
+### **Extend Sink API**
+
+Create a custom sink by subclassing existing task types:
+
+```python
+from atlas.tasks.object_detection.coco import CocoDataset
+import pyarrow as pa
+import atlas
+
+class CocoDatasetWithImageURL(CocoDataset):
+    def __init__(self, data: str, **kwargs):
+        super().__init__(data, **kwargs)
+        self.base_url = "http://images.cocodataset.org/val2017/"
+
+    def to_batches(self, batch_size: int = 1024):
+        for batch in super().to_batches(batch_size):
+            file_names = batch.column("file_name").to_pylist()
+            image_urls = [self.base_url + file_name for file_name in file_names]
+            yield batch.add_column(
+                0, pa.field("image_url", pa.string()), pa.array(image_urls, type=pa.string())
+            )
+
+# Usage
+custom_coco_dataset = CocoDatasetWithImageURL(
+    "examples/data/coco/annotations/instances_val2017_small.json",
+    image_root="examples/data/coco/images"
+)
+atlas.sink(custom_coco_dataset, "coco_with_url.lance")
+```
+
+---
+
+## 3. CLI Usage
+
+The CLI allows sinking datasets without Python scripts.
+
+**COCO**
+
+```bash
+atlas sink examples/data/coco/annotations/instances_val2017_small.json
+```
+
+**YOLO**
+
+```bash
+atlas sink examples/data/yolo/coco128
+```
+
+**Segmentation**
+
+```bash
+atlas sink examples/data/coco/annotations/instances_val2017_small.json --task segmentation
+```
+
+**CSV / Text / JSONL**
+
+```bash
+atlas sink examples/data/dummy.csv
+atlas sink examples/data/dummy.txt
+atlas sink examples/data/dummy.jsonl
+```
+
+**Parquet**
+
+```bash
+atlas sink examples/data/dummy.parquet
+```
+
+---

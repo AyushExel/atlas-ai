@@ -1,0 +1,134 @@
+---
+title : "Index"
+sidebar_position : 2
+---
+
+:::note 
+This is page is under development 
+:::
+
+# Index
+The **Index** operation in Atlas allows you to build **multi-modal**, **scalable**, and **searchable** indexes on your datasets. These indexes are stored alongside the Lance dataset, enabling fast retrieval for deep learning workflows.
+
+## Key Features
+
+* **Multi-Modal Indexing**: Supports images, text, audio, and more.
+* **Automatic Embedding Generation**: For image and text columns, Atlas can generate embeddings using default models.
+* **Flexible Index Types**: Includes vector indexes (for k-NN search), full-text search (FTS), and hybrid indexes.
+* **Extensible Framework**: Plug in custom embedding models and indexing strategies.
+
+---
+
+## 1. Requirements
+
+Before using Indexing, ensure that:
+
+* Your dataset has been sinked using `atlas.sink(...)` and saved in `.lance` format.
+* The column(s) you want to index are present in the Lance dataset.
+
+---
+
+## 2. Usage: Python API
+
+Use the `Indexer` class to create and manage indexes.
+
+### **Initialize Indexer**
+
+```python
+from atlas.index import Indexer
+
+# Attach to a Lance dataset created from sink
+idx = Indexer("pokemon.lance")
+```
+
+### **Create a Vector Index**
+
+Create a vector index on the `image` column:
+
+```python
+idx.create_index(column="image", index_type="vector")
+```
+
+* Atlas will automatically:
+
+  * Detect the column type.
+  * Use a default embedding model (e.g., CLIP).
+  * Store resulting embeddings in a new `vector` column.
+
+### **Create a Full-Text Search (FTS) Index**
+
+```python
+idx.create_index(column="text", index_type="fts")
+```
+
+* Enables text queries using efficient keyword-based search.
+
+---
+
+## 3. Listing Existing Indexes
+
+You can inspect all created indexes:
+
+```python
+idx.list_indexes()
+```
+
+Sample output:
+
+```
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Column Name ┃ Data Type                         ┃ Index Type ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ image       │ binary                            │ None       │
+│ text        │ string                            │ text_idx   │
+│ vector      │ fixed_size_list<item: float>[768] │ vector_idx │
+└─────────────┴───────────────────────────────────┴────────────┘
+```
+
+* `image` has no index, but was used to generate `vector`.
+* `text` has a `text_idx` (FTS index).
+* `vector` column has a `vector_idx`.
+
+---
+
+## 4. Notes
+
+* You must run `sink()` before indexing.
+* If you modify the dataset (e.g., add/remove records), re-indexing may be necessary.
+* Indexing large datasets may take time depending on the embedding model used.
+
+---
+
+## 5. Summary of Index Types
+
+| Index Type | Column Type | Purpose                        |
+| ---------- | ----------- | ------------------------------ |
+| `vector`   | image/text  | k-NN search using embeddings   |
+| `fts`      | text        | Keyword-based fast text search |
+| custom     | any         | Extend with your own logic     |
+
+---
+
+## Example Workflow Recap
+
+```python
+import atlas
+from atlas.index import Indexer
+from datasets import load_dataset
+
+# 1. Sink dataset
+dataset = load_dataset("lambdalabs/pokemon-blip-captions", split="train")
+atlas.sink(dataset, "pokemon.lance")
+
+# 2. Create Indexer
+idx = Indexer("pokemon.lance")
+
+# 3. Create vector index on images
+idx.create_index(column="image", index_type="vector")
+
+# 4. Create FTS index on captions
+idx.create_index(column="text", index_type="fts")
+
+# 5. List all indexes
+idx.list_indexes()
+```
